@@ -1,0 +1,29 @@
+syntax = "proto3";
+
+import "google/protobuf/timestamp.proto";
+import "google/protobuf/empty.proto";
+import "google/protobuf/wrappers.proto";
+
+option go_package = "/src/controllers/auth";
+
+
+message LoginInput {
+	string user = 1;
+	string password = 2;
+}
+
+message AuthOutput {
+	string token = 1;
+	google.protobuf.Timestamp exp = 2;
+}
+
+message TokenInput {
+	string token = 1;
+}
+
+service AuthService {
+	rpc Login(LoginInput) returns (AuthOutput) {}
+	rpc Refresh(TokenInput) returns (AuthOutput) {}
+	rpc Invalidate(TokenInput) returns (google.protobuf.Empty) {}
+	rpc IsValid(TokenInput) returns (google.protobuf.BoolValue) {}
+}

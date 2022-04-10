@@ -1,0 +1,17 @@
+{
+	"folders": [
+		{
+			"path": "./src"
+		}
+	],
+	"settings": {},
+	"extensions": {
+		"recommendations": [
+			"zxh404.vscode-proto3",
+			"eamodio.gitlens",
+			"mhutchie.git-graph",
+			"42crunch.vscode-openapi",
+			"qcz.text-power-tools"
+		]
+	}
+}
