@@ -33,4 +33,9 @@ ZwcGNhbXBAREVTS1RPUC0xNE9WNTVQAQIDBA==
 `,
 		"JWT public token",
 	)
+
+	DATABASE_QUERY = flag.String(
+		"DATABASE_QUERY",
+		"host=localhost port=5432 user=postgres password=somepassword dbname=postgres sslmode=disable application_name=authentication",
+		"Query used to connect with psql driver")
 )

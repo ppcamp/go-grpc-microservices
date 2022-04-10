@@ -6,17 +6,45 @@ import (
 	"streamer/repositories/database"
 	"streamer/services/base"
 	"streamer/utils/jwt"
+	"sync"
 
 	"github.com/sirupsen/logrus"
 )
 
-type Handler struct {
+type HHandler struct {
 	Cache    cache.Cache
 	Signer   jwt.Jwt
 	Database database.Connection
 }
 
-func (h *Handler) Handle(ctx context.Context, input any, service base.BaseBusiness) (response *any, err error) {
+var (
+	handler *HHandler
+	once    sync.Once
+	lock    sync.RWMutex
+)
+
+func InitHandler(h *HHandler) {
+	once.Do(func() {
+		handler = h
+	})
+}
+
+func GetHandler() *HHandler {
+	lock.RLock()
+	defer lock.RUnlock()
+
+	if handler == nil {
+		logrus.Warn("you need to initialize the handler before")
+	}
+
+	return handler
+}
+
+func Handle[In, Out any](
+	ctx context.Context,
+	input In,
+	service base.BaseBusiness[In, Out],
+) (response *Out, err error) {
 	service.SetContext(ctx)
 
 	select {
@@ -24,20 +52,27 @@ func (h *Handler) Handle(ctx context.Context, input any, service base.BaseBusine
 		return
 	default:
 		switch service := service.(type) {
-		case base.BaseTransactionBusiness:
-			return h.handleTransactionService(input, service)
+		case base.BaseTransactionBusiness[In, Out]:
+			return handleTransactionService(input, service)
 		default:
-			return h.handleBaseService(input, service)
+			return handleBaseService(input, service)
 		}
 	}
 }
 
-func (h *Handler) handleBaseService(input any, service base.BaseBusiness) (response *any, err error) {
+func handleBaseService[In, Out any](
+	input In,
+	service base.BaseBusiness[In, Out],
+) (response *Out, err error) {
 	return service.Execute(input)
-
 }
 
-func (h *Handler) handleTransactionService(input any, service base.BaseTransactionBusiness) (response *any, err error) {
+func handleTransactionService[In, Out any](
+	input In,
+	service base.BaseTransactionBusiness[In, Out],
+) (response *Out, err error) {
+	h := GetHandler()
+
 	tr, err := h.Database.StartTransaction()
 	defer func() {
 		if err != nil {

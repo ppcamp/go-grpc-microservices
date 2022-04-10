@@ -10,10 +10,10 @@ import (
 type UserPasswordService struct {
 	UnsafeUserPasswordServiceServer
 
-	handler *services.Handler
+	handler *services.HHandler
 }
 
-func NewUserPasswordService(handler *services.Handler) UserPasswordServiceServer {
+func NewUserPasswordService(handler *services.HHandler) UserPasswordServiceServer {
 	return &UserPasswordService{handler: handler}
 }
 

@@ -1,8 +1,6 @@
 package main
 
 import (
-	"net"
-	"os"
 	"streamer/configs"
 	"streamer/controllers/auth"
 	"streamer/controllers/user_password"
@@ -12,28 +10,27 @@ import (
 	"streamer/utils"
 	"streamer/utils/jwt"
 
-	"github.com/sirupsen/logrus"
 	"google.golang.org/grpc"
 )
 
-func getHandler() *services.Handler {
+func getHandler() *services.HHandler {
 	cacheRepository := cache.NewCacheRepository()
 
 	privateKey := utils.Must(jwt.ParseSSHPrivateKey(*configs.JWT_PRIVATE))
 	signer := jwt.NewJwt(privateKey)
 
-	db := utils.Must(database.NewStore("", ""))
+	db := utils.Must(database.NewStore(*configs.DATABASE_QUERY))
 
-	return &services.Handler{
+	h := &services.HHandler{
 		Cache:    cacheRepository,
 		Signer:   signer,
 		Database: db,
 	}
+	services.InitHandler(h)
+	return h
 }
 
-func serve(grpcServer *grpc.Server, ch chan os.Signal) {
-	listener := utils.Must(net.Listen("tcp", *configs.APP_PORT))
-
+func init_services(grpcServer *grpc.Server) {
 	handler := getHandler()
 
 	authServer := auth.NewAuthService(handler)
@@ -41,9 +38,4 @@ func serve(grpcServer *grpc.Server, ch chan os.Signal) {
 
 	auth.RegisterAuthServiceServer(grpcServer, authServer)
 	user_password.RegisterUserPasswordServiceServer(grpcServer, userServer)
-
-	if err := grpcServer.Serve(listener); err != nil {
-		logrus.Fatal(utils.Wraps("Fail to serve gRPC", err))
-		ch <- os.Interrupt
-	}
 }

@@ -3,7 +3,7 @@ package auth
 import (
 	"context"
 	"streamer/services"
-	authService "streamer/services/auth"
+	authS "streamer/services/auth"
 
 	empty "github.com/golang/protobuf/ptypes/empty"
 	wrappers "github.com/golang/protobuf/ptypes/wrappers"
@@ -13,32 +13,27 @@ import (
 type AuthService struct {
 	UnsafeAuthServiceServer
 
-	handler *services.Handler
+	handler *services.HHandler
 }
 
-func NewAuthService(handler *services.Handler) AuthServiceServer {
+func NewAuthService(handler *services.HHandler) AuthServiceServer {
 	return &AuthService{handler: handler}
 }
 
 func (s *AuthService) Login(ctx context.Context, in *LoginInput) (*AuthOutput, error) {
-	_, err := s.handler.Handle(
-		ctx,
-		nil,
-		authService.NewUserLoginHandler(
-			s.handler.Cache,
-			s.handler.Signer,
-		),
+	pl := authS.UserLoginInput{User: in.User, Password: in.Password}
+
+	response, err := services.Handle(ctx, pl,
+		authS.NewUserLoginHandler(s.handler.Cache, s.handler.Signer),
 	)
 	if err != nil {
 		return nil, err
 	}
 
-	out := &AuthOutput{
-		Token: "",                // response.Token,
-		Exp:   timestamppb.Now(), //response.Exp,
-	}
-
-	return out, nil
+	return &AuthOutput{
+		Token: response.Token,
+		Exp:   timestamppb.New(response.Exp),
+	}, nil
 }
 
 func (s *AuthService) Refresh(context.Context, *TokenInput) (*AuthOutput, error) {
