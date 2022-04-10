@@ -1,8 +1,8 @@
 package user_login
 
 import (
-	"streamer/business/base"
 	"streamer/repositories/cache"
+	"streamer/services/base"
 	"streamer/utils/jwt"
 )
 
@@ -20,21 +20,19 @@ type UserLogin struct {
 	signerExp  int64
 }
 
-func (u *UserLogin) Execute(_ UserLoginInput) (*UserLoginOutput, error) {
-	token, err := u.signer.Generate(&jwt.Session{}, u.signerExp)
+func (u *UserLogin) Execute(_ any) (*any, error) {
+	_, err := u.signer.Generate(&jwt.Session{}, u.signerExp)
 	if err != nil {
 		return nil, err
 	}
 
-	return &UserLoginOutput{
-		Token: token,
-	}, nil
+	return nil, nil
 }
 
 func NewUserLoginHandler(
 	repo cache.Auth,
 	signer jwt.Jwt,
-) base.BaseBusiness[UserLoginInput, UserLoginOutput] {
+) base.BaseBusiness {
 	return &UserLogin{
 		repository: repo,
 		signer:     signer,

@@ -2,22 +2,43 @@ package auth
 
 import (
 	"context"
+	"streamer/services"
+	authService "streamer/services/auth"
 
 	empty "github.com/golang/protobuf/ptypes/empty"
 	wrappers "github.com/golang/protobuf/ptypes/wrappers"
+	"google.golang.org/protobuf/types/known/timestamppb"
 )
 
 type AuthService struct {
-	UnimplementedAuthServiceServer
+	UnsafeAuthServiceServer
+
+	handler *services.Handler
 }
 
-func NewAuthService() AuthServiceServer {
-	return &AuthService{}
+func NewAuthService(handler *services.Handler) AuthServiceServer {
+	return &AuthService{handler: handler}
 }
 
 func (s *AuthService) Login(ctx context.Context, in *LoginInput) (*AuthOutput, error) {
+	_, err := s.handler.Handle(
+		ctx,
+		nil,
+		authService.NewUserLoginHandler(
+			s.handler.Cache,
+			s.handler.Signer,
+		),
+	)
+	if err != nil {
+		return nil, err
+	}
 
-	return nil, nil
+	out := &AuthOutput{
+		Token: "",                // response.Token,
+		Exp:   timestamppb.Now(), //response.Exp,
+	}
+
+	return out, nil
 }
 
 func (s *AuthService) Refresh(context.Context, *TokenInput) (*AuthOutput, error) {

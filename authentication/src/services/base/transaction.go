@@ -1,7 +1,7 @@
 package base
 
-type BaseTransactionBusiness[Input any, Output any] interface {
-	BaseBusiness[Input, Output]
+type BaseTransactionBusiness interface {
+	BaseBusiness
 
 	// Set the current sqlx transaction for the context
 	SetTransaction(tr any)

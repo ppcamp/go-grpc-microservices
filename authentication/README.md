@@ -20,3 +20,7 @@ To generate a new key, type:
 # Generates a new key, which should be in some var
 ssh-keygen -t ecdsa -b 521
 ```
+
+## TODO
+
+- [ ] Give users the possibility to use NonTransaction elements
