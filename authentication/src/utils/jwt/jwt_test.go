@@ -5,6 +5,7 @@ import (
 	"streamer/configs"
 	"streamer/utils/jwt"
 	"testing"
+	"time"
 
 	"github.com/stretchr/testify/require"
 )
@@ -21,7 +22,7 @@ func TestGenerate(t *testing.T) {
 	authorizer := jwt.NewJwt(privateKey)
 
 	tests := []struct {
-		exp int64
+		exp time.Duration
 		err error
 	}{
 		{exp: 30, err: nil},

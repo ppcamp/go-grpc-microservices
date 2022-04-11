@@ -46,7 +46,7 @@ func GetHandler() *Handler {
 func Handle[In, Out any](
 	ctx context.Context,
 	input In,
-	service base.BaseBusiness[In, Out],
+	service base.IBaseBusiness[In, Out],
 ) (response *Out, err error) {
 	service.SetContext(ctx)
 
@@ -55,7 +55,7 @@ func Handle[In, Out any](
 		return
 	default:
 		switch service := service.(type) {
-		case base.BaseTransactionBusiness[In, Out]:
+		case base.ITransactionBusiness[In, Out]:
 			return handleTransactionService(input, service)
 		default:
 			return handleBaseService(input, service)
@@ -65,14 +65,14 @@ func Handle[In, Out any](
 
 func handleBaseService[In, Out any](
 	input In,
-	service base.BaseBusiness[In, Out],
+	service base.IBaseBusiness[In, Out],
 ) (response *Out, err error) {
 	return service.Execute(input)
 }
 
 func handleTransactionService[In, Out any](
 	input In,
-	service base.BaseTransactionBusiness[In, Out],
+	service base.ITransactionBusiness[In, Out],
 ) (response *Out, err error) {
 	h := GetHandler()
 

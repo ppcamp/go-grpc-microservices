@@ -10,6 +10,28 @@ Responsible to:
 It uses JWT under the hood. It alsos uses Go subpackages.
 Basing this approach on https://curity.io/resources/learn/jwt-best-practices/
 
+
+## How to generate some key?
+
+This project is currently using ECSDA P512 algorithm to auth the JWT token.
+To generate a new key, type:
+
+```bash
+# Generates a new key, which should be in some var
+ssh-keygen -t ecdsa -b 521
+```
+
+## TODO
+
+- [ ] Allow repositories the possibility to use NonTransaction connection
+
+
+## See
+
+- https://github.com/golang-migrate/migrate/tree/master/cmd/migrate
+
+
+
 ## How this repository works:
 
 ```mermaid
@@ -47,23 +69,3 @@ graph LR;
 The `Handler Decorator` is an outcoming layer for the controllers.
 With this approach you can commit/rollback transactions and set status codes and
 another response parameters that you may like.
-
-
-## How to generate some key?
-
-This project is currently using ECSDA P512 algorithm to auth the JWT token.
-To generate a new key, type:
-
-```bash
-# Generates a new key, which should be in some var
-ssh-keygen -t ecdsa -b 521
-```
-
-## TODO
-
-- [  ] Allow repositories the possibility to use NonTransaction connection
-
-
-## See
-
-- https://github.com/golang-migrate/migrate/tree/master/cmd/migrate

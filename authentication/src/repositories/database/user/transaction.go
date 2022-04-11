@@ -9,7 +9,8 @@ type UserTransaction struct {
 }
 
 type UserStorage interface {
-	GetUser()
+	GetUserPassword(userId string) (string, error)
+	CreateUserPassword(userId string, hashedPassword string) error
 }
 
 func NewTransaction(tx *sqlx.Tx) *UserTransaction {

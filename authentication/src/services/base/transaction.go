@@ -1,18 +1,20 @@
 package base
 
-type BaseTransactionBusiness[In, Out any] interface {
-	BaseBusiness[In, Out]
+import "streamer/repositories/database"
+
+type ITransactionBusiness[In, Out any] interface {
+	IBaseBusiness[In, Out]
 
 	// Set the current sqlx transaction for the context
-	SetTransaction(tr any)
+	SetTransaction(tr database.Storage)
 }
 
-type BaseTransactionBusinessImpl struct {
-	BaseBusinessImpl
+type TransactionBusiness[T any] struct {
+	BaseBusiness
 
-	Transaction any
+	Transaction T
 }
 
-func (tc *BaseTransactionBusinessImpl) SetTransaction(tr any) {
+func (tc *TransactionBusiness[T]) SetTransaction(tr T) {
 	tc.Transaction = tr
 }

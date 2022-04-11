@@ -13,6 +13,11 @@ run_server: ## Run the server
 	@cd src/ && go run cmd/*.go
 
 
+.PHONY: build
+build: ## Build the server
+	@cd src/ && go build -race cmd/*.go
+
+
 .PHONY: generate
 generate: ## Create golang protos
 	@echo "Generating protos"

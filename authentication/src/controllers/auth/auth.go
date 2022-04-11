@@ -3,7 +3,7 @@ package auth
 import (
 	"context"
 	"streamer/controllers/base"
-	authS "streamer/services/auth"
+	authS "streamer/services/user_login"
 
 	empty "github.com/golang/protobuf/ptypes/empty"
 	wrappers "github.com/golang/protobuf/ptypes/wrappers"
