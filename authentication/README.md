@@ -62,3 +62,8 @@ ssh-keygen -t ecdsa -b 521
 ## TODO
 
 - [  ] Allow repositories the possibility to use NonTransaction connection
+
+
+## See
+
+- https://github.com/golang-migrate/migrate/tree/master/cmd/migrate

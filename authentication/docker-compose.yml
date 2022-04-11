@@ -7,9 +7,10 @@ services:
     restart: always
     environment:
       POSTGRES_PASSWORD: somepassword
+      POSTGRES_USER: authuser
+      POSTGRES_DB: authentication
     ports:
       - 5432:5432
-
   # adminer:
   #   image: adminer
   #   restart: always

@@ -5,7 +5,7 @@ import (
 	"os"
 	"os/signal"
 	"streamer/configs"
-	"streamer/services"
+	"streamer/controllers/base"
 	"streamer/utils"
 
 	"github.com/sirupsen/logrus"
@@ -39,7 +39,7 @@ func gracefulStop(grpcServer *grpc.Server) {
 	logrus.Info("Closing gRPC connections")
 	grpcServer.GracefulStop()
 
-	handler := services.GetHandler()
+	handler := base.GetHandler()
 
 	logrus.Info("Closing PostgreSQL connections")
 	if err := handler.Database.Close(); err != nil {
