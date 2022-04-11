@@ -18,7 +18,7 @@ func main() {
 
 	grpcServer := grpc.NewServer()
 	listener := utils.Must(net.Listen("tcp", *configs.APP_PORT))
-	init_services(grpcServer)
+	initServices(grpcServer)
 
 	go func() {
 		if err := grpcServer.Serve(listener); err != nil {
@@ -32,12 +32,12 @@ func main() {
 	gracefulStop(grpcServer)
 }
 
-func gracefulStop(s *grpc.Server) {
+func gracefulStop(grpcServer *grpc.Server) {
 	logrus.Info("Closing server...")
 	defer logrus.Info("Server closed!")
 
 	logrus.Info("Closing gRPC connections")
-	s.GracefulStop()
+	grpcServer.GracefulStop()
 
 	handler := services.GetHandler()
 

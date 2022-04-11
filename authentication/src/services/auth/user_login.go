@@ -17,7 +17,7 @@ type UserLoginOutput struct {
 	Exp   time.Time
 }
 
-type UserLogin[In, Out any] struct {
+type UserLoginService[In, Out any] struct {
 	base.BaseTransactionBusinessImpl
 
 	repository cache.Auth
@@ -25,7 +25,7 @@ type UserLogin[In, Out any] struct {
 	signerExp  int64
 }
 
-func (u *UserLogin[In, Out]) Execute(in UserLoginInput) (*UserLoginOutput, error) {
+func (u *UserLoginService[In, Out]) Execute(in UserLoginInput) (*UserLoginOutput, error) {
 	_, err := u.signer.Generate(&jwt.Session{}, u.signerExp)
 	if err != nil {
 		return nil, err
@@ -34,11 +34,11 @@ func (u *UserLogin[In, Out]) Execute(in UserLoginInput) (*UserLoginOutput, error
 	return nil, nil
 }
 
-func NewUserLoginHandler(
+func NewUserLoginService(
 	repo cache.Auth,
 	signer jwt.Jwt,
 ) base.BaseBusiness[UserLoginInput, UserLoginOutput] {
-	return &UserLogin[UserLoginInput, UserLoginOutput]{
+	return &UserLoginService[UserLoginInput, UserLoginOutput]{
 		repository: repo,
 		signer:     signer,
 		signerExp:  60 * 60 * 60,

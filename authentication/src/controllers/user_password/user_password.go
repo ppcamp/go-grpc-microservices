@@ -2,7 +2,7 @@ package user_password
 
 import (
 	context "context"
-	"streamer/services"
+	"streamer/controllers/base"
 
 	empty "github.com/golang/protobuf/ptypes/empty"
 )
@@ -10,10 +10,10 @@ import (
 type UserPasswordService struct {
 	UnsafeUserPasswordServiceServer
 
-	handler *services.HHandler
+	handler *base.Handler
 }
 
-func NewUserPasswordService(handler *services.HHandler) UserPasswordServiceServer {
+func NewUserPasswordService(handler *base.Handler) UserPasswordServiceServer {
 	return &UserPasswordService{handler: handler}
 }
 

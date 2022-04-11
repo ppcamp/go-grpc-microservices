@@ -1,4 +1,4 @@
-package services
+package base
 
 import (
 	"context"
@@ -11,25 +11,25 @@ import (
 	"github.com/sirupsen/logrus"
 )
 
-type HHandler struct {
+type Handler struct {
 	Cache    cache.Cache
 	Signer   jwt.Jwt
 	Database database.Connection
 }
 
 var (
-	handler *HHandler
+	handler *Handler
 	once    sync.Once
 	lock    sync.RWMutex
 )
 
-func InitHandler(h *HHandler) {
+func InitHandler(h *Handler) {
 	once.Do(func() {
 		handler = h
 	})
 }
 
-func GetHandler() *HHandler {
+func GetHandler() *Handler {
 	lock.RLock()
 	defer lock.RUnlock()
 
@@ -40,6 +40,9 @@ func GetHandler() *HHandler {
 	return handler
 }
 
+// Handle is responsible to identify the service type and assign the correct
+// workflow to it. Furthermore, it's also responsible to commit/rollback
+// transactions when needed and set another responses parameters if needed.
 func Handle[In, Out any](
 	ctx context.Context,
 	input In,
@@ -75,7 +78,9 @@ func handleTransactionService[In, Out any](
 
 	tr, err := h.Database.StartTransaction()
 	defer func() {
-		if err != nil {
+		panicked := recover()
+
+		if err != nil || panicked != nil {
 			if err := tr.Rollback(); err != nil {
 				logrus.WithFields(logrus.Fields{"input": input}).
 					Error("fail to rollback transaction")
@@ -88,7 +93,7 @@ func handleTransactionService[In, Out any](
 		}
 	}()
 	if err != nil {
-		panic(err)
+		return nil, err
 	}
 
 	service.SetTransaction(tr)
