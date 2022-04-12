@@ -9,12 +9,13 @@ type UserCreatePassword[In, Out any] struct {
 	base.TransactionBusiness[database.UserStorage]
 }
 
-// NewUserCreatePasswordService creates a service that get user password, check it, and
+// NewService creates a service that get user password, check it, and
 // return a valid JWT token
-func NewUserCreatePasswordService() base.IBaseBusiness[UserLoginInput, UserLoginOutput] {
-	return &UserCreatePassword[UserLoginInput, UserLoginOutput]{}
+func NewService() base.IBaseBusiness[Input, Output] {
+
+	return &UserCreatePassword[Input, Output]{}
 }
 
-func (u *UserCreatePassword[In, Out]) Execute(in UserLoginInput) (*UserLoginOutput, error) {
+func (u *UserCreatePassword[In, Out]) Execute(in Input) (*Output, error) {
 	return nil, nil
 }

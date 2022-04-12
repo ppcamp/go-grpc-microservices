@@ -4,12 +4,12 @@ import (
 	"time"
 )
 
-type UserLoginInput struct {
+type Input struct {
 	User     string
 	Password string
 }
 
-type UserLoginOutput struct {
+type Output struct {
 	Token string
 	Exp   time.Time
 }

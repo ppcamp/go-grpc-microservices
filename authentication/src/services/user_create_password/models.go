@@ -1,15 +1,10 @@
 package user_password
 
-import (
-	"time"
-)
-
-type UserLoginInput struct {
+type Input struct {
 	User     string
 	Password string
 }
 
-type UserLoginOutput struct {
-	Token string
-	Exp   time.Time
+type Output struct {
+	ActivateToken string
 }

@@ -16,20 +16,20 @@ type UserLoginService[In, Out any] struct {
 	signerExp time.Duration
 }
 
-// NewUserLoginService creates a service that get user password, check it, and
+// NewService creates a service that get user password, check it, and
 // return a valid JWT token
-func NewUserLoginService(
+func NewService(
 	repo cache.Auth,
 	signer jwt.Jwt,
-) base.IBaseBusiness[UserLoginInput, UserLoginOutput] {
-	return &UserLoginService[UserLoginInput, UserLoginOutput]{
+) base.IBaseBusiness[Input, Output] {
+	return &UserLoginService[Input, Output]{
 		cache:     repo,
 		signer:    signer,
 		signerExp: time.Second * 60 * 60 * 60,
 	}
 }
 
-func (u *UserLoginService[In, Out]) Execute(in UserLoginInput) (*UserLoginOutput, error) {
+func (u *UserLoginService[In, Out]) Execute(in Input) (*Output, error) {
 	hash, err := u.Transaction.GetUserPassword(in.User)
 	if err != nil {
 		return nil, err
@@ -45,7 +45,7 @@ func (u *UserLoginService[In, Out]) Execute(in UserLoginInput) (*UserLoginOutput
 		return nil, err
 	}
 
-	response := &UserLoginOutput{token, exp}
+	response := &Output{token, exp}
 
 	if err = u.cache.SetSession(u.Context, in.User, token, exp); err != nil {
 		return nil, err
