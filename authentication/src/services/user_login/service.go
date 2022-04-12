@@ -11,9 +11,9 @@ import (
 type UserLoginService[In, Out any] struct {
 	base.TransactionBusiness[database.UserStorage]
 
-	repository cache.Auth
-	signer     jwt.Jwt
-	signerExp  time.Duration
+	cache     cache.Auth
+	signer    jwt.Jwt
+	signerExp time.Duration
 }
 
 // NewUserLoginService creates a service that get user password, check it, and
@@ -23,9 +23,9 @@ func NewUserLoginService(
 	signer jwt.Jwt,
 ) base.IBaseBusiness[UserLoginInput, UserLoginOutput] {
 	return &UserLoginService[UserLoginInput, UserLoginOutput]{
-		repository: repo,
-		signer:     signer,
-		signerExp:  60 * 60 * 60,
+		cache:     repo,
+		signer:    signer,
+		signerExp: time.Second * 60 * 60 * 60,
 	}
 }
 
@@ -39,12 +39,17 @@ func (u *UserLoginService[In, Out]) Execute(in UserLoginInput) (*UserLoginOutput
 		return nil, err
 	}
 
+	exp := time.Now().Add(u.signerExp)
 	token, err := u.signer.Generate(&jwt.Session{}, u.signerExp)
 	if err != nil {
 		return nil, err
 	}
 
-	exp := time.Now().Add(time.Second * time.Duration(u.signerExp))
+	response := &UserLoginOutput{token, exp}
 
-	return &UserLoginOutput{token, exp}, nil
+	if err = u.cache.SetSession(u.Context, in.User, token, exp); err != nil {
+		return nil, err
+	}
+
+	return response, nil
 }

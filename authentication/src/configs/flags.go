@@ -37,5 +37,11 @@ ZwcGNhbXBAREVTS1RPUC0xNE9WNTVQAQIDBA==
 	DATABASE_QUERY = flag.String(
 		"DATABASE_QUERY",
 		"host=localhost port=5432 user=authuser password=somepassword dbname=authentication sslmode=disable application_name=authentication",
-		"Query used to connect with psql driver")
+		"Query used to connect with psql driver",
+	)
+
+	APP_ID = flag.String(
+		"APP_ID",
+		"3490be09e8904918997b073c460c834c",
+		"The app unique ID, it can be user to store/retrieve data from cache")
 )

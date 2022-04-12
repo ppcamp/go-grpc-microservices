@@ -20,9 +20,13 @@ const _ = grpc.SupportPackageIsVersion7
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type AuthServiceClient interface {
+	// Validate password, create and return a valid Token
 	Login(ctx context.Context, in *LoginInput, opts ...grpc.CallOption) (*AuthOutput, error)
+	// Validate a token and return a new one if the current token is valid
 	Refresh(ctx context.Context, in *TokenInput, opts ...grpc.CallOption) (*AuthOutput, error)
+	// Make some token invalid (expire sessions)
 	Invalidate(ctx context.Context, in *TokenInput, opts ...grpc.CallOption) (*empty.Empty, error)
+	// Check if some token is valid or not
 	IsValid(ctx context.Context, in *TokenInput, opts ...grpc.CallOption) (*wrappers.BoolValue, error)
 }
 
@@ -74,9 +78,13 @@ func (c *authServiceClient) IsValid(ctx context.Context, in *TokenInput, opts ..
 // All implementations must embed UnimplementedAuthServiceServer
 // for forward compatibility
 type AuthServiceServer interface {
+	// Validate password, create and return a valid Token
 	Login(context.Context, *LoginInput) (*AuthOutput, error)
+	// Validate a token and return a new one if the current token is valid
 	Refresh(context.Context, *TokenInput) (*AuthOutput, error)
+	// Make some token invalid (expire sessions)
 	Invalidate(context.Context, *TokenInput) (*empty.Empty, error)
+	// Check if some token is valid or not
 	IsValid(context.Context, *TokenInput) (*wrappers.BoolValue, error)
 	mustEmbedUnimplementedAuthServiceServer()
 }

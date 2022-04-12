@@ -19,9 +19,16 @@ const _ = grpc.SupportPackageIsVersion7
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type UserPasswordServiceClient interface {
-	Create(ctx context.Context, in *CreatePasswordInput, opts ...grpc.CallOption) (*empty.Empty, error)
-	Recover(ctx context.Context, in *RecoverInput, opts ...grpc.CallOption) (*RecoverPayload, error)
-	Update(ctx context.Context, in *UpdatePasswordInput, opts ...grpc.CallOption) (*empty.Empty, error)
+	// Create a new (disabled) user and return a temp secret to activate it
+	Create(ctx context.Context, in *CreateInput, opts ...grpc.CallOption) (*CreateOutput, error)
+	// Use the secret from Create to activate the user
+	Activate(ctx context.Context, in *ActivateInput, opts ...grpc.CallOption) (*empty.Empty, error)
+	// Create a temp secret that allows user to update its password
+	Recover(ctx context.Context, in *RecoverInput, opts ...grpc.CallOption) (*RecoverOutput, error)
+	// Use the secret got from Recover to update some user password
+	Update(ctx context.Context, in *UpdateInput, opts ...grpc.CallOption) (*empty.Empty, error)
+	// Use the token to update the current user password
+	UpdateByToken(ctx context.Context, in *UpdateInput, opts ...grpc.CallOption) (*empty.Empty, error)
 }
 
 type userPasswordServiceClient struct {
@@ -32,8 +39,8 @@ func NewUserPasswordServiceClient(cc grpc.ClientConnInterface) UserPasswordServi
 	return &userPasswordServiceClient{cc}
 }
 
-func (c *userPasswordServiceClient) Create(ctx context.Context, in *CreatePasswordInput, opts ...grpc.CallOption) (*empty.Empty, error) {
-	out := new(empty.Empty)
+func (c *userPasswordServiceClient) Create(ctx context.Context, in *CreateInput, opts ...grpc.CallOption) (*CreateOutput, error) {
+	out := new(CreateOutput)
 	err := c.cc.Invoke(ctx, "/UserPasswordService/Create", in, out, opts...)
 	if err != nil {
 		return nil, err
@@ -41,8 +48,17 @@ func (c *userPasswordServiceClient) Create(ctx context.Context, in *CreatePasswo
 	return out, nil
 }
 
-func (c *userPasswordServiceClient) Recover(ctx context.Context, in *RecoverInput, opts ...grpc.CallOption) (*RecoverPayload, error) {
-	out := new(RecoverPayload)
+func (c *userPasswordServiceClient) Activate(ctx context.Context, in *ActivateInput, opts ...grpc.CallOption) (*empty.Empty, error) {
+	out := new(empty.Empty)
+	err := c.cc.Invoke(ctx, "/UserPasswordService/Activate", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *userPasswordServiceClient) Recover(ctx context.Context, in *RecoverInput, opts ...grpc.CallOption) (*RecoverOutput, error) {
+	out := new(RecoverOutput)
 	err := c.cc.Invoke(ctx, "/UserPasswordService/Recover", in, out, opts...)
 	if err != nil {
 		return nil, err
@@ -50,9 +66,18 @@ func (c *userPasswordServiceClient) Recover(ctx context.Context, in *RecoverInpu
 	return out, nil
 }
 
-func (c *userPasswordServiceClient) Update(ctx context.Context, in *UpdatePasswordInput, opts ...grpc.CallOption) (*empty.Empty, error) {
+func (c *userPasswordServiceClient) Update(ctx context.Context, in *UpdateInput, opts ...grpc.CallOption) (*empty.Empty, error) {
 	out := new(empty.Empty)
 	err := c.cc.Invoke(ctx, "/UserPasswordService/Update", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *userPasswordServiceClient) UpdateByToken(ctx context.Context, in *UpdateInput, opts ...grpc.CallOption) (*empty.Empty, error) {
+	out := new(empty.Empty)
+	err := c.cc.Invoke(ctx, "/UserPasswordService/UpdateByToken", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -63,9 +88,16 @@ func (c *userPasswordServiceClient) Update(ctx context.Context, in *UpdatePasswo
 // All implementations must embed UnimplementedUserPasswordServiceServer
 // for forward compatibility
 type UserPasswordServiceServer interface {
-	Create(context.Context, *CreatePasswordInput) (*empty.Empty, error)
-	Recover(context.Context, *RecoverInput) (*RecoverPayload, error)
-	Update(context.Context, *UpdatePasswordInput) (*empty.Empty, error)
+	// Create a new (disabled) user and return a temp secret to activate it
+	Create(context.Context, *CreateInput) (*CreateOutput, error)
+	// Use the secret from Create to activate the user
+	Activate(context.Context, *ActivateInput) (*empty.Empty, error)
+	// Create a temp secret that allows user to update its password
+	Recover(context.Context, *RecoverInput) (*RecoverOutput, error)
+	// Use the secret got from Recover to update some user password
+	Update(context.Context, *UpdateInput) (*empty.Empty, error)
+	// Use the token to update the current user password
+	UpdateByToken(context.Context, *UpdateInput) (*empty.Empty, error)
 	mustEmbedUnimplementedUserPasswordServiceServer()
 }
 
@@ -73,14 +105,20 @@ type UserPasswordServiceServer interface {
 type UnimplementedUserPasswordServiceServer struct {
 }
 
-func (UnimplementedUserPasswordServiceServer) Create(context.Context, *CreatePasswordInput) (*empty.Empty, error) {
+func (UnimplementedUserPasswordServiceServer) Create(context.Context, *CreateInput) (*CreateOutput, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method Create not implemented")
 }
-func (UnimplementedUserPasswordServiceServer) Recover(context.Context, *RecoverInput) (*RecoverPayload, error) {
+func (UnimplementedUserPasswordServiceServer) Activate(context.Context, *ActivateInput) (*empty.Empty, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method Activate not implemented")
+}
+func (UnimplementedUserPasswordServiceServer) Recover(context.Context, *RecoverInput) (*RecoverOutput, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method Recover not implemented")
 }
-func (UnimplementedUserPasswordServiceServer) Update(context.Context, *UpdatePasswordInput) (*empty.Empty, error) {
+func (UnimplementedUserPasswordServiceServer) Update(context.Context, *UpdateInput) (*empty.Empty, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method Update not implemented")
+}
+func (UnimplementedUserPasswordServiceServer) UpdateByToken(context.Context, *UpdateInput) (*empty.Empty, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method UpdateByToken not implemented")
 }
 func (UnimplementedUserPasswordServiceServer) mustEmbedUnimplementedUserPasswordServiceServer() {}
 
@@ -96,7 +134,7 @@ func RegisterUserPasswordServiceServer(s grpc.ServiceRegistrar, srv UserPassword
 }
 
 func _UserPasswordService_Create_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(CreatePasswordInput)
+	in := new(CreateInput)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
@@ -108,7 +146,25 @@ func _UserPasswordService_Create_Handler(srv interface{}, ctx context.Context, d
 		FullMethod: "/UserPasswordService/Create",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(UserPasswordServiceServer).Create(ctx, req.(*CreatePasswordInput))
+		return srv.(UserPasswordServiceServer).Create(ctx, req.(*CreateInput))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _UserPasswordService_Activate_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(ActivateInput)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(UserPasswordServiceServer).Activate(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/UserPasswordService/Activate",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(UserPasswordServiceServer).Activate(ctx, req.(*ActivateInput))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -132,7 +188,7 @@ func _UserPasswordService_Recover_Handler(srv interface{}, ctx context.Context, 
 }
 
 func _UserPasswordService_Update_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(UpdatePasswordInput)
+	in := new(UpdateInput)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
@@ -144,7 +200,25 @@ func _UserPasswordService_Update_Handler(srv interface{}, ctx context.Context, d
 		FullMethod: "/UserPasswordService/Update",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(UserPasswordServiceServer).Update(ctx, req.(*UpdatePasswordInput))
+		return srv.(UserPasswordServiceServer).Update(ctx, req.(*UpdateInput))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _UserPasswordService_UpdateByToken_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(UpdateInput)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(UserPasswordServiceServer).UpdateByToken(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/UserPasswordService/UpdateByToken",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(UserPasswordServiceServer).UpdateByToken(ctx, req.(*UpdateInput))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -161,12 +235,20 @@ var UserPasswordService_ServiceDesc = grpc.ServiceDesc{
 			Handler:    _UserPasswordService_Create_Handler,
 		},
 		{
+			MethodName: "Activate",
+			Handler:    _UserPasswordService_Activate_Handler,
+		},
+		{
 			MethodName: "Recover",
 			Handler:    _UserPasswordService_Recover_Handler,
 		},
 		{
 			MethodName: "Update",
 			Handler:    _UserPasswordService_Update_Handler,
+		},
+		{
+			MethodName: "UpdateByToken",
+			Handler:    _UserPasswordService_UpdateByToken_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

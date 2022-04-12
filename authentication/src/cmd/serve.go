@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"streamer/configs"
 	"streamer/controllers/auth"
 	"streamer/controllers/base"
@@ -24,7 +25,13 @@ func initServices(grpcServer *grpc.Server) {
 }
 
 func initAndGetHandler() *base.Handler {
-	cacheRepository := cache.NewCacheRepository()
+	cacheConfig := cache.CacheConfig{
+		Addr:     "localhost:6379",
+		Password: "", // no password set
+		DB:       0,  // use default DB
+	}
+	cacheId := fmt.Sprintf("%s-%s", configs.APP_NAME, *configs.APP_ID)
+	cacheRepository := utils.Must(cache.NewCacheRepository(cacheConfig, cacheId))
 
 	privateKey := utils.Must(jwt.ParseSSHPrivateKey(*configs.JWT_PRIVATE))
 	signer := jwt.NewJwt(privateKey)

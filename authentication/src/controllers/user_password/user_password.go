@@ -17,14 +17,22 @@ func NewUserPasswordService(handler *base.Handler) UserPasswordServiceServer {
 	return &UserPasswordService{handler: handler}
 }
 
-func (u *UserPasswordService) Create(context.Context, *CreatePasswordInput) (*empty.Empty, error) {
+func (u *UserPasswordService) Create(context.Context, *CreateInput) (*CreateOutput, error) {
 	return nil, nil
 }
 
-func (u *UserPasswordService) Recover(context.Context, *RecoverInput) (*RecoverPayload, error) {
+func (u *UserPasswordService) Activate(context.Context, *ActivateInput) (*empty.Empty, error) {
 	return nil, nil
 }
 
-func (u *UserPasswordService) Update(context.Context, *UpdatePasswordInput) (*empty.Empty, error) {
+func (u *UserPasswordService) Recover(context.Context, *RecoverInput) (*RecoverOutput, error) {
+	return nil, nil
+}
+
+func (u *UserPasswordService) Update(context.Context, *UpdateInput) (*empty.Empty, error) {
+	return nil, nil
+}
+
+func (u *UserPasswordService) UpdateByToken(context.Context, *UpdateInput) (*empty.Empty, error) {
 	return nil, nil
 }
