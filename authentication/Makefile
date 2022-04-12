@@ -7,7 +7,17 @@ COLOR_BASE=\033[0m
 COLOR_DIM=\e[2m
 COLOR_CMD=\x1b[36m
 COLOR_DESCR=\x1b[0m
+
+# Migrations
 N?=1
+
+# Docker
+TAG=latest
+BRANCH_TAG=`git describe --abbrev=0 --tags | sort | head -n1`
+ifeq ($(strip $(BRANCH_TAG)),)
+TAG="${BRANCH_TAG}"
+endif
+IMAGE=ppcamp/go-microservice-authentication:${TAG}
 
 .PHONY: run
 run: ## Run the server
@@ -15,8 +25,14 @@ run: ## Run the server
 
 
 .PHONY: build
-build: ## Build the server
+build: ## Build the server locally
 	@cd src/ && go build -race cmd/*.go
+
+
+.PHONY: docker
+docker: ## Create docker image
+	@echo "Building ${IMAGE}"
+	@docker build --no-cache -f Dockerfile -t ${IMAGE} .
 
 
 .PHONY: migrate
