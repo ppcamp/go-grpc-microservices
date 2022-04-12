@@ -20,7 +20,7 @@ type Claims struct {
 }
 
 type Jwt interface {
-	Generate(session *Session, expSecs time.Duration) (string, error)
+	Generate(session *Session, exp time.Duration) (string, error)
 	Parse(signedToken string) (*Claims, error)
 }
 
@@ -53,7 +53,7 @@ func NewJwt(secret *ecdsa.PrivateKey) Jwt {
 }
 
 // Generate some token for a given session
-func (j *impl) Generate(session *Session, expSecs time.Duration) (string, error) {
+func (j *impl) Generate(session *Session, exp time.Duration) (string, error) {
 	claims := &Claims{
 		Session: session,
 		StandardClaims: jwt.StandardClaims{
