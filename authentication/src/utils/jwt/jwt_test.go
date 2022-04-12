@@ -31,7 +31,7 @@ func TestGenerate(t *testing.T) {
 	}
 
 	for _, test := range tests {
-		token, err := authorizer.Generate(&jwt.Session{}, exp)
+		token, err := authorizer.Generate(&jwt.Session{}, time.Duration(exp))
 		assert.Equal(test.err, err)
 		if err != nil {
 			assert.NotEmpty(token)
