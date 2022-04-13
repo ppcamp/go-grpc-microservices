@@ -3,9 +3,6 @@
 		{
 			"path": "./src"
 		},
-		{
-			"path": "."
-		}
 	],
 	"settings": {},
 	"extensions": {
@@ -15,6 +12,30 @@
 			"mhutchie.git-graph",
 			"42crunch.vscode-openapi",
 			"qcz.text-power-tools"
+		]
+	},
+	"launch": {
+		"version": "0.2.0",
+		"configurations": [
+			{
+				"name": "Debug: server",
+				"type": "go",
+				"request": "launch",
+				"mode": "debug",
+				"showLog": false,
+				"program": "${workspaceFolder}/cmd/server.go",
+				"substitutePath": [{
+					// if you're inside a symbolic folder/link
+					"from": "${workspaceFolder}",
+					"to": "/mnt/d/git/go-grpc-microservice-stream/authentication/src"
+				}],
+				"env": {},
+				"args":[],
+				// "remotePath":"",
+				// "port":8080,
+				// "host": "127.0.0.1",
+
+			},
 		]
 	}
 }

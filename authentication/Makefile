@@ -21,12 +21,12 @@ IMAGE=ppcamp/go-microservice-authentication:${TAG}
 
 .PHONY: run
 run: ## Run the server
-	@cd src/ && go run cmd/*.go
+	@cd src/ && go run cmd/server.go
 
 
 .PHONY: build
 build: ## Build the server locally
-	@cd src/ && go build -race cmd/*.go
+	@cd src/ && go build -race cmd/server.go
 
 
 .PHONY: docker
