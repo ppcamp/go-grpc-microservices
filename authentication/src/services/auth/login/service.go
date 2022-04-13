@@ -3,13 +3,13 @@ package login
 import (
 	"streamer/repositories/cache"
 	"streamer/repositories/database/user"
-	"streamer/services/base"
+	"streamer/services"
 	"streamer/utils/jwt"
 	"time"
 )
 
 type UserLoginService[In, Out any] struct {
-	base.TransactionBusiness[user.UserStorage]
+	services.TransactionBusiness[user.UserStorage]
 
 	Storage   user.UserStorage
 	cache     cache.Auth
@@ -22,7 +22,7 @@ type UserLoginService[In, Out any] struct {
 func NewService(
 	repo cache.Auth,
 	signer jwt.Jwt,
-) base.ITransactionBusiness[Input, Output] {
+) services.ITransactionBusiness[Input, Output] {
 	return &UserLoginService[Input, Output]{
 		cache:     repo,
 		signer:    signer,

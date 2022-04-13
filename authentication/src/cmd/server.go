@@ -6,8 +6,8 @@ import (
 	"os"
 	"os/signal"
 	"streamer/configs"
+	"streamer/controllers"
 	"streamer/controllers/auth"
-	"streamer/controllers/base"
 	"streamer/controllers/user_password"
 	"streamer/repositories/cache"
 	"streamer/repositories/database"
@@ -45,7 +45,7 @@ func gracefulStop(grpcServer *grpc.Server) {
 	logrus.Info("Closing gRPC connections")
 	grpcServer.GracefulStop()
 
-	handler := base.GetHandler()
+	handler := controllers.GetHandler()
 
 	logrus.Info("Closing PostgreSQL connections")
 	if err := handler.Database.Close(); err != nil {
@@ -63,7 +63,7 @@ func initServices(grpcServer *grpc.Server) {
 	user_password.RegisterUserPasswordServiceServer(grpcServer, userServer)
 }
 
-func initAndGetHandler() *base.Handler {
+func initAndGetHandler() *controllers.Handler {
 	logrus.Info("Starting connection with cache")
 	cacheConfig := cache.CacheConfig{
 		Addr:     "localhost:6379",
@@ -81,11 +81,11 @@ func initAndGetHandler() *base.Handler {
 	db := utils.Must(database.NewStore(*configs.DATABASE_QUERY))
 
 	logrus.Info("Initializing handlers")
-	h := &base.Handler{
+	h := &controllers.Handler{
 		Cache:    cacheRepository,
 		Signer:   signer,
 		Database: db,
 	}
-	base.InitHandler(h)
+	controllers.Init(h)
 	return h
 }

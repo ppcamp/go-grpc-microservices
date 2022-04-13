@@ -4,7 +4,7 @@ import (
 	"database/sql"
 	"streamer/repositories/cache"
 	"streamer/repositories/database/user"
-	"streamer/services/base"
+	"streamer/services"
 	"streamer/utils"
 	"streamer/utils/strings"
 	"time"
@@ -14,12 +14,12 @@ type UserCreatePassword struct {
 	cache cache.UserData
 	exp   time.Duration
 
-	base.TransactionBusiness[user.UserStorage]
+	services.TransactionBusiness[user.UserStorage]
 }
 
 // NewService creates a service that get user password, check it, and
 // return a valid JWT token
-func NewService(cache cache.UserData) base.ITransactionBusiness[Input, Output] {
+func NewService(cache cache.UserData) services.ITransactionBusiness[Input, Output] {
 	return &UserCreatePassword{cache: cache, exp: time.Hour * 24}
 }
 

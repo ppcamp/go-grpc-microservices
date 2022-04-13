@@ -1,10 +1,10 @@
-package base
+package controllers
 
 import (
 	"context"
 	"streamer/repositories/cache"
 	"streamer/repositories/database"
-	"streamer/services/base"
+	"streamer/services"
 	"streamer/utils/jwt"
 	"sync"
 
@@ -23,7 +23,7 @@ var (
 	lock    sync.RWMutex
 )
 
-func InitHandler(h *Handler) {
+func Init(h *Handler) {
 	once.Do(func() {
 		handler = h
 	})
@@ -46,7 +46,7 @@ func GetHandler() *Handler {
 func Handle[In, Out any](
 	ctx context.Context,
 	input In,
-	service base.IBaseBusiness[In, Out],
+	service services.IBaseBusiness[In, Out],
 ) (response *Out, err error) {
 	service.SetContext(ctx)
 
@@ -55,7 +55,7 @@ func Handle[In, Out any](
 		return
 	default:
 		switch service := service.(type) {
-		case base.ITransactionBusiness[In, Out]:
+		case services.ITransactionBusiness[In, Out]:
 			return handleTransactionService(input, service)
 		default:
 			return handleBaseService(input, service)
@@ -65,7 +65,7 @@ func Handle[In, Out any](
 
 func handleBaseService[In, Out any](
 	input In,
-	service base.IBaseBusiness[In, Out],
+	service services.IBaseBusiness[In, Out],
 ) (response *Out, err error) {
 
 	return service.Execute(input)
@@ -73,7 +73,7 @@ func handleBaseService[In, Out any](
 
 func handleTransactionService[In, Out any](
 	input In,
-	service base.ITransactionBusiness[In, Out],
+	service services.ITransactionBusiness[In, Out],
 ) (response *Out, err error) {
 	h := GetHandler()
 

@@ -2,7 +2,7 @@ package auth
 
 import (
 	"context"
-	"streamer/controllers/base"
+	"streamer/controllers"
 	"streamer/services/auth/login"
 
 	empty "github.com/golang/protobuf/ptypes/empty"
@@ -13,17 +13,17 @@ import (
 type AuthService struct {
 	UnsafeAuthServiceServer
 
-	handler *base.Handler
+	handler *controllers.Handler
 }
 
-func NewAuthService(handler *base.Handler) AuthServiceServer {
+func NewAuthService(handler *controllers.Handler) AuthServiceServer {
 	return &AuthService{handler: handler}
 }
 
 func (s *AuthService) Login(ctx context.Context, in *LoginInput) (*AuthOutput, error) {
 	pl := login.Input{User: in.User, Password: in.Password}
 
-	response, err := base.Handle[login.Input, login.Output](
+	response, err := controllers.Handle[login.Input, login.Output](
 		ctx, pl, login.NewService(s.handler.Cache, s.handler.Signer),
 	)
 	if err != nil {

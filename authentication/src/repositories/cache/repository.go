@@ -30,7 +30,7 @@ func NewCacheRepository(options CacheConfig, identifier string) (Cache, error) {
 	defer cancel()
 
 	if resp := client.Ping(timedCtx); resp.Err() != nil {
-		logrus.Warn("redis connection failed %v", resp.Err())
+		logrus.Warnf("redis connection failed %v", resp.Err())
 		return nil, resp.Err()
 	}
 

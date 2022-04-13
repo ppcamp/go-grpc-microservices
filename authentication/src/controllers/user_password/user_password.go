@@ -2,7 +2,7 @@ package user_password
 
 import (
 	context "context"
-	"streamer/controllers/base"
+	"streamer/controllers"
 	"streamer/services/user/create_password"
 
 	empty "github.com/golang/protobuf/ptypes/empty"
@@ -11,10 +11,10 @@ import (
 type UserPasswordService struct {
 	UnsafeUserPasswordServiceServer
 
-	handler *base.Handler
+	handler *controllers.Handler
 }
 
-func NewUserPasswordService(handler *base.Handler) UserPasswordServiceServer {
+func NewUserPasswordService(handler *controllers.Handler) UserPasswordServiceServer {
 	return &UserPasswordService{handler: handler}
 }
 
@@ -22,7 +22,7 @@ func (u *UserPasswordService) Create(ctx context.Context, in *CreateInput) (*Cre
 	pl := create_password.Input{User: in.User, Password: in.Password}
 
 	service := create_password.NewService(u.handler.Cache)
-	response, err := base.
+	response, err := controllers.
 		Handle[create_password.Input, create_password.Output](ctx, pl, service)
 	if err != nil {
 		return &CreateOutput{}, err
