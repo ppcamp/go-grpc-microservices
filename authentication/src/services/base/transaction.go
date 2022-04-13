@@ -1,6 +1,11 @@
 package base
 
-import "streamer/repositories/database"
+import (
+	"database/sql/driver"
+	"streamer/repositories/database"
+
+	"github.com/sirupsen/logrus"
+)
 
 type ITransactionBusiness[In, Out any] interface {
 	IBaseBusiness[In, Out]
@@ -9,12 +14,16 @@ type ITransactionBusiness[In, Out any] interface {
 	SetTransaction(tr database.Storage)
 }
 
-type TransactionBusiness[T any] struct {
+type TransactionBusiness[T driver.Tx] struct {
 	BaseBusiness
 
-	Transaction T
+	Storage T
 }
 
-func (tc *TransactionBusiness[T]) SetTransaction(tr T) {
-	tc.Transaction = tr
+func (tc *TransactionBusiness[T]) SetTransaction(tr database.Storage) {
+	ntr, ok := tr.(T)
+	if !ok {
+		logrus.Panic("fail to parse transaction")
+	}
+	tc.Storage = ntr
 }

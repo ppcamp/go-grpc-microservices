@@ -1,4 +1,4 @@
-package user_password
+package create_password
 
 type Input struct {
 	User     string

@@ -67,6 +67,7 @@ func handleBaseService[In, Out any](
 	input In,
 	service base.IBaseBusiness[In, Out],
 ) (response *Out, err error) {
+
 	return service.Execute(input)
 }
 
@@ -77,25 +78,34 @@ func handleTransactionService[In, Out any](
 	h := GetHandler()
 
 	tr, err := h.Database.StartTransaction()
-	defer func() {
-		panicked := recover()
-
-		if err != nil || panicked != nil {
-			if err := tr.Rollback(); err != nil {
-				logrus.WithFields(logrus.Fields{"input": input}).
-					Error("fail to rollback transaction")
-			}
-		} else {
-			if err := tr.Commit(); err != nil {
-				logrus.WithFields(logrus.Fields{"input": input}).
-					Error("fail to commit transaction")
-			}
-		}
-	}()
 	if err != nil {
 		return nil, err
 	}
 
+	defer func() {
+		panicked := recover()
+
+		if err != nil || panicked != nil {
+			logrus.WithFields(logrus.Fields{
+				"panic": panicked,
+				"err":   err,
+			}).Warn("err or panicked")
+			if err := tr.Rollback(); err != nil {
+				logrus.WithFields(logrus.Fields{"input": input}).
+					Error("fail to rollback transaction")
+			}
+
+			return
+		}
+
+		if err := tr.Commit(); err != nil {
+			logrus.WithFields(logrus.Fields{"input": input}).
+				Error("fail to commit transaction")
+		}
+	}()
+
 	service.SetTransaction(tr)
-	return service.Execute(input)
+
+	response, err = service.Execute(input)
+	return response, err
 }

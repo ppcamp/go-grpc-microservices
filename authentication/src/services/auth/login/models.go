@@ -1,4 +1,4 @@
-package user_login
+package login
 
 import (
 	"time"

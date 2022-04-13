@@ -1,6 +1,8 @@
 package user
 
 import (
+	"database/sql/driver"
+
 	"github.com/jmoiron/sqlx"
 )
 
@@ -9,6 +11,7 @@ type UserTransaction struct {
 }
 
 type UserStorage interface {
+	driver.Tx
 	GetUserPassword(userId string) (string, error)
 	CreateUserPassword(userId string, hashedPassword string) error
 }
