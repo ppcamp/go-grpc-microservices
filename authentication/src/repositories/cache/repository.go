@@ -26,10 +26,7 @@ func NewCacheRepository(options CacheConfig, identifier string) (Cache, error) {
 	ops := redis.Options(options)
 	client := redis.NewClient(&ops)
 
-	timedCtx, cancel := context.WithTimeout(context.Background(), pingTime)
-	defer cancel()
-
-	if resp := client.Ping(timedCtx); resp.Err() != nil {
+	if resp := client.Ping(context.Background()); resp.Err() != nil {
 		logrus.Warnf("redis connection failed %v", resp.Err())
 		return nil, resp.Err()
 	}

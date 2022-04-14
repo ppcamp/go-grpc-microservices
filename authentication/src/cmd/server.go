@@ -13,6 +13,7 @@ import (
 	"streamer/repositories/database"
 	"streamer/utils"
 	"streamer/utils/jwt"
+	"time"
 
 	"github.com/sirupsen/logrus"
 	"google.golang.org/grpc"
@@ -66,9 +67,10 @@ func initServices(grpcServer *grpc.Server) {
 func initAndGetHandler() *controllers.Handler {
 	logrus.Info("Starting connection with cache")
 	cacheConfig := cache.CacheConfig{
-		Addr:     "localhost:6379",
-		Password: "", // no password set
-		DB:       0,  // use default DB
+		Addr:        "localhost:6379",
+		Password:    "", // no password set
+		DB:          0,  // use default DB
+		DialTimeout: time.Second * 2,
 	}
 	cacheId := fmt.Sprintf("%s-%s", configs.APP_NAME, *configs.APP_ID)
 	cacheRepository := utils.Must(cache.NewCacheRepository(cacheConfig, cacheId))
