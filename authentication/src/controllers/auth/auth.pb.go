@@ -28,8 +28,8 @@ type LoginInput struct {
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
-	User     string `protobuf:"bytes,1,opt,name=user,proto3" json:"user,omitempty"`
-	Password string `protobuf:"bytes,2,opt,name=password,proto3" json:"password,omitempty"`
+	User     string `protobuf:"bytes,1,opt,name=user,proto3" json:"user,omitempty"`         // the user's id
+	Password string `protobuf:"bytes,2,opt,name=password,proto3" json:"password,omitempty"` // the user's password
 }
 
 func (x *LoginInput) Reset() {
@@ -83,8 +83,8 @@ type AuthOutput struct {
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
-	Token string               `protobuf:"bytes,1,opt,name=token,proto3" json:"token,omitempty"`
-	Exp   *timestamp.Timestamp `protobuf:"bytes,2,opt,name=exp,proto3" json:"exp,omitempty"`
+	Token string               `protobuf:"bytes,1,opt,name=token,proto3" json:"token,omitempty"` // jwt token
+	Exp   *timestamp.Timestamp `protobuf:"bytes,2,opt,name=exp,proto3" json:"exp,omitempty"`     // jwt expiration token
 }
 
 func (x *AuthOutput) Reset() {
@@ -138,7 +138,7 @@ type TokenInput struct {
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
-	Token string `protobuf:"bytes,1,opt,name=token,proto3" json:"token,omitempty"`
+	Token string `protobuf:"bytes,1,opt,name=token,proto3" json:"token,omitempty"` // jwt token
 }
 
 func (x *TokenInput) Reset() {

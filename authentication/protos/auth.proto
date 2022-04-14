@@ -8,22 +8,26 @@ option go_package = "/src/controllers/auth";
 
 
 message LoginInput {
-	string user = 1;
-	string password = 2;
+	string user = 1; // the user's id
+	string password = 2; // the user's password
 }
 
 message AuthOutput {
-	string token = 1;
-	google.protobuf.Timestamp exp = 2;
+	string token = 1; // jwt token
+	google.protobuf.Timestamp exp = 2; // jwt expiration token
 }
 
 message TokenInput {
-	string token = 1;
+	string token = 1; // jwt token
 }
 
 service AuthService {
+	/* Validate password, create and return a valid Token */
 	rpc Login(LoginInput) returns (AuthOutput) {}
+	/* Validate a token and return a new one if the current token is valid */
 	rpc Refresh(TokenInput) returns (AuthOutput) {}
+	/* Make some token invalid (expire sessions) */
 	rpc Invalidate(TokenInput) returns (google.protobuf.Empty) {}
+	/* Check if some token is valid or not */
 	rpc IsValid(TokenInput) returns (google.protobuf.BoolValue) {}
 }

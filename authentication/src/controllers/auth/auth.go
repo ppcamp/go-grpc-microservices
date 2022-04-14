@@ -2,8 +2,8 @@ package auth
 
 import (
 	"context"
-	"streamer/controllers/base"
-	authS "streamer/services/auth"
+	"streamer/controllers"
+	"streamer/services/auth/login"
 
 	empty "github.com/golang/protobuf/ptypes/empty"
 	wrappers "github.com/golang/protobuf/ptypes/wrappers"
@@ -13,18 +13,18 @@ import (
 type AuthService struct {
 	UnsafeAuthServiceServer
 
-	handler *base.Handler
+	handler *controllers.Handler
 }
 
-func NewAuthService(handler *base.Handler) AuthServiceServer {
+func NewAuthService(handler *controllers.Handler) AuthServiceServer {
 	return &AuthService{handler: handler}
 }
 
 func (s *AuthService) Login(ctx context.Context, in *LoginInput) (*AuthOutput, error) {
-	pl := authS.UserLoginInput{User: in.User, Password: in.Password}
+	pl := login.Input{User: in.User, Password: in.Password}
 
-	response, err := base.Handle(ctx, pl,
-		authS.NewUserLoginService(s.handler.Cache, s.handler.Signer),
+	response, err := controllers.Handle[login.Input, login.Output](
+		ctx, pl, login.NewService(s.handler.Cache, s.handler.Signer),
 	)
 	if err != nil {
 		return nil, err

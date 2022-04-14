@@ -18,6 +18,7 @@ type Connection interface {
 	StartTransaction() (Storage, error)
 
 	Close() error
+	Ping() error
 }
 
 type store struct {
@@ -34,7 +35,14 @@ func NewStore(dataSource string) (Connection, error) {
 	db.SetMaxOpenConns(MAX_OPEN_CONNS)
 	db.SetMaxIdleConns(MAX_IDLE_CONNS)
 	db.SetConnMaxIdleTime(CONN_MAX_IDLE_TIME)
-	return &store{db}, nil
+
+	s := &store{db}
+
+	if err = s.Ping(); err != nil {
+		return nil, err
+	}
+
+	return s, nil
 }
 
 func (s *store) StartTransaction() (Storage, error) {
@@ -47,4 +55,8 @@ func (s *store) StartTransaction() (Storage, error) {
 
 func (s *store) Close() error {
 	return s.DB.Close()
+}
+
+func (s *store) Ping() error {
+	return s.DB.Ping()
 }

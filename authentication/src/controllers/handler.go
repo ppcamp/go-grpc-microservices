@@ -1,10 +1,10 @@
-package base
+package controllers
 
 import (
 	"context"
 	"streamer/repositories/cache"
 	"streamer/repositories/database"
-	"streamer/services/base"
+	"streamer/services"
 	"streamer/utils/jwt"
 	"sync"
 
@@ -23,7 +23,7 @@ var (
 	lock    sync.RWMutex
 )
 
-func InitHandler(h *Handler) {
+func Init(h *Handler) {
 	once.Do(func() {
 		handler = h
 	})
@@ -46,7 +46,7 @@ func GetHandler() *Handler {
 func Handle[In, Out any](
 	ctx context.Context,
 	input In,
-	service base.BaseBusiness[In, Out],
+	service services.IBaseBusiness[In, Out],
 ) (response *Out, err error) {
 	service.SetContext(ctx)
 
@@ -55,7 +55,7 @@ func Handle[In, Out any](
 		return
 	default:
 		switch service := service.(type) {
-		case base.BaseTransactionBusiness[In, Out]:
+		case services.ITransactionBusiness[In, Out]:
 			return handleTransactionService(input, service)
 		default:
 			return handleBaseService(input, service)
@@ -65,37 +65,47 @@ func Handle[In, Out any](
 
 func handleBaseService[In, Out any](
 	input In,
-	service base.BaseBusiness[In, Out],
+	service services.IBaseBusiness[In, Out],
 ) (response *Out, err error) {
+
 	return service.Execute(input)
 }
 
 func handleTransactionService[In, Out any](
 	input In,
-	service base.BaseTransactionBusiness[In, Out],
+	service services.ITransactionBusiness[In, Out],
 ) (response *Out, err error) {
 	h := GetHandler()
 
 	tr, err := h.Database.StartTransaction()
-	defer func() {
-		panicked := recover()
-
-		if err != nil || panicked != nil {
-			if err := tr.Rollback(); err != nil {
-				logrus.WithFields(logrus.Fields{"input": input}).
-					Error("fail to rollback transaction")
-			}
-		} else {
-			if err := tr.Commit(); err != nil {
-				logrus.WithFields(logrus.Fields{"input": input}).
-					Error("fail to commit transaction")
-			}
-		}
-	}()
 	if err != nil {
 		return nil, err
 	}
 
+	defer func() {
+		panicked := recover()
+
+		if err != nil || panicked != nil {
+			logrus.WithFields(logrus.Fields{
+				"panic": panicked,
+				"err":   err,
+			}).Warn("err or panicked")
+			if err := tr.Rollback(); err != nil {
+				logrus.WithFields(logrus.Fields{"input": input}).
+					Error("fail to rollback transaction")
+			}
+
+			return
+		}
+
+		if err := tr.Commit(); err != nil {
+			logrus.WithFields(logrus.Fields{"input": input}).
+				Error("fail to commit transaction")
+		}
+	}()
+
 	service.SetTransaction(tr)
-	return service.Execute(input)
+
+	response, err = service.Execute(input)
+	return response, err
 }
