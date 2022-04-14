@@ -43,6 +43,13 @@ To generate a new key, type:
 ssh-keygen -t ecdsa -b 521
 ```
 
+
+Install
+
+```bash
+curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh | sh -s -- -b $(go env GOPATH)/bin v1.45.2
+```
+
 ## TODO
 
 - [ ] Allow repositories the possibility to use NonTransaction connection
@@ -51,4 +58,5 @@ ssh-keygen -t ecdsa -b 521
 ## See
 
 - https://github.com/golang-migrate/migrate/tree/master/cmd/migrate
+
 

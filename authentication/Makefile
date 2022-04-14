@@ -1,12 +1,17 @@
 default: help
 
+.PHONY: run
+.PHONY: help
+.PHONY: build
+.PHONY: docker
+.PHONY: migrate
+.PHONY: create_migration
+.PHONY: revert_migrations
+.PHONY: generate
+.PHONY: setup_dev
+
 include .env
 
-# COLORS
-COLOR_BASE=\033[0m
-COLOR_DIM=\e[2m
-COLOR_CMD=\x1b[36m
-COLOR_DESCR=\x1b[0m
 
 # Migrations
 N?=1
@@ -19,41 +24,40 @@ TAG="${BRANCH_TAG}"
 endif
 IMAGE=ppcamp/go-microservice-authentication:${TAG}
 
-.PHONY: run
+
 run: ## Run the server
 	@cd src/ && go run cmd/server.go
 
 
-.PHONY: build
 build: ## Build the server locally
 	@cd src/ && go build -race cmd/server.go
 
 
-.PHONY: docker
+lint: ## Run linters to this project. Remember to run `make setup_dev`
+	@echo "Running linters"
+	@cd src && golangci-lint run ./...
+
+
 docker: ## Create docker image
 	@echo "Building ${IMAGE}"
 	@docker build --no-cache -f Dockerfile -t ${IMAGE} .
 
 
-.PHONY: migrate
-migrate: ## Run migrations
+migrate: ## Run migrations created with `make create_migration`. Remember to `make setup_dev`
 	@echo "Running migrations"
 	@migrate -path migrations -database "postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@localhost:5432/${POSTGRES_DATABASE}?sslmode=disable&application_name=authmigration" -verbose up
 
 
-.PHONY: create_migration
-create_migration: ## Create a new migration, e.g name=teste make create_migration
+create_migration: ## Create a new migration, e.g `name=teste make create_migration`. Remember to `make setup_dev`
 	@echo "Creating migration"
 	@migrate create -ext sql -dir migrations -seq ${name}
 
 
-.PHONY: revert_migrations
-revert_migrations: ## Revert a given migration, e.g N=2 make revert_migrations, by default 1
+revert_migrations: ## Revert a given migration, e.g `N=2 make revert_migrations`, by default 1. Remember to `make setup_dev`
 	@echo "Reverting migrations"
 	@migrate -path migrations -database "postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@localhost:5432/${POSTGRES_DATABASE}?sslmode=disable&application_name=authmigration" -verbose down ${N}
 
 
-.PHONY: generate
 generate: ## Create golang protos
 	@echo "Generating protos"
 	@echo " - Generating messages"
@@ -62,17 +66,22 @@ generate: ## Create golang protos
 	@protoc --go-grpc_out=. protos/*.proto
 
 
-.PHONY: setup_dev
 setup_dev: ## Install dev dependencies
 	@echo "Installing go-migrate"
-	@cd src && go get
 	@go install -tags 'postgres' github.com/golang-migrate/migrate/v4/cmd/migrate@latest
+	@echo "Installing linters"
+	@curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh | sh -s -- -b $(go env GOPATH)/bin v1.45.2
 
 
-.PHONY: help
 help:
-	@printf "${COLOR_DIM} Available methods: ${COLOR_BASE} \n\n"
+	@printf "\e[2m Available methods:\033[0m\n\n"
+# 1. read makefile
+# 2. get lines that can have a method description and assign colors to method
+# 3. colour special worlds. If fail, return the original row
+# 4. colour and strip lines
+# 5. create column view
 	@cat $(MAKEFILE_LIST) | \
 	 	grep -E '^[a-zA-Z_]+:.* ## .*$$' | \
-		sed -rn 's/(.*): ## (.*)/${COLOR_CMD}\1:${COLOR_DESCR}\2/p' | \
+		sed -rn 's/`([a-zA-Z0-9=\_\ \-]+)`/\x1b[33m\1\x1b[0m/g;t1;b2;:1;h;:2;p' | \
+		sed -rn 's/(.*): ## (.*)/\x1b[32m\1:\x1b[0m\2/p' | \
 		column -t -s ":"
