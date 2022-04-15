@@ -19,7 +19,7 @@ func TestGenerate(t *testing.T) {
 	privateKey, err := jwt.ParseSSHPrivateKey(*configs.JWT_PRIVATE)
 	assert.Nil(err)
 
-	authorizer := jwt.NewJwt(privateKey)
+	jwt.Init(privateKey)
 
 	tests := []struct {
 		exp time.Duration
@@ -31,7 +31,7 @@ func TestGenerate(t *testing.T) {
 	}
 
 	for _, test := range tests {
-		token, err := authorizer.Generate(&jwt.Session{}, time.Duration(exp))
+		token, err := jwt.Signer.Generate(&jwt.Session{}, time.Duration(exp))
 		assert.Equal(test.err, err)
 		if err != nil {
 			assert.NotEmpty(token)

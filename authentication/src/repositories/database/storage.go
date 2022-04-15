@@ -1,20 +1,18 @@
 package database
 
 import (
-	"database/sql/driver"
-	"streamer/repositories/database/user"
-
 	"github.com/jmoiron/sqlx"
 )
 
 type Storage interface {
-	driver.Tx
-	user.UserStorage
+	UserStorage
+	AuthStorage
 }
 
 type storage struct {
 	*sqlx.Tx
-	*user.UserTransaction
+	*UserTransaction
+	*AuthTransaction
 }
 
 // NewStorage starts a new object that can be used to access all internal
@@ -24,5 +22,5 @@ type storage struct {
 //
 // If you
 func NewStorage(tx *sqlx.Tx) Storage {
-	return &storage{tx, user.NewTransaction(tx)}
+	return &storage{tx, NewUserTransaction(tx), NewAuthTransaction(tx)}
 }

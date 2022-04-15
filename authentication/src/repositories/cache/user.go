@@ -14,24 +14,29 @@ type user struct {
 }
 
 type UserData interface {
-	SetSecret(ctx context.Context, userId, secret string, exp time.Duration) error
-	GetSecret(key string) error
+	// StoreSecret into the user logged
+	StoreSecret(ctx context.Context, userId, secret string, exp time.Duration) error
+
+	// UserFromSecret check if the user is logged in or not
+	UserFromSecret(key string) (string, error)
 }
 
-func (s *user) getKeyForUser(userId string) string {
-	return fmt.Sprintf("%s-activate-%s", s.appId, userId)
+func (s *user) getKeyForSecret(secret string) string {
+	return fmt.Sprintf("%s-userdata-%s", s.appId, secret)
 }
 
-func (s *user) SetSecret(ctx context.Context, userId, secret string, exp time.Duration) error {
-	key := s.getKeyForUser(userId)
+func (s *user) StoreSecret(ctx context.Context, userId, secret string, exp time.Duration) error {
+	key := s.getKeyForSecret(secret)
 
 	pipe := s.client.TxPipeline()
-	pipe.Set(ctx, key, secret, exp)
+	pipe.Set(ctx, key, userId, exp)
 
 	_, err := pipe.Exec(ctx)
 	return err
 }
 
-func (s *user) GetSecret(key string) error {
-	return nil
+func (s *user) UserFromSecret(secret string) (string, error) {
+	key := s.getKeyForSecret(secret)
+	response := s.client.Get(context.Background(), key)
+	return response.Val(), response.Err()
 }

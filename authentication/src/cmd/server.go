@@ -6,15 +6,15 @@ import (
 	"os"
 	"os/signal"
 	"streamer/configs"
-	"streamer/controllers"
-	"streamer/controllers/auth"
-	"streamer/controllers/user_password"
+	"streamer/helpers/handlers"
+	"streamer/http/gRPC/auth"
+	"streamer/http/gRPC/user_password"
 	"streamer/repositories/cache"
 	"streamer/repositories/database"
-	"streamer/utils"
 	"streamer/utils/jwt"
 	"time"
 
+	"github.com/ppcamp/go-lib/errors"
 	"github.com/sirupsen/logrus"
 	"google.golang.org/grpc"
 )
@@ -24,12 +24,12 @@ func main() {
 	signal.Notify(signalChan, os.Interrupt)
 
 	grpcServer := grpc.NewServer()
-	listener := utils.Must(net.Listen("tcp", *configs.APP_PORT))
+	listener := errors.Must(net.Listen("tcp", *configs.APP_PORT))
 	initServices(grpcServer)
 
 	go func() {
 		if err := grpcServer.Serve(listener); err != nil {
-			logrus.Fatal(utils.Wraps("Fail to serve gRPC", err))
+			logrus.Fatal(errors.Wraps("Fail to serve gRPC", err))
 			signalChan <- os.Interrupt
 		}
 	}()
@@ -46,7 +46,7 @@ func gracefulStop(grpcServer *grpc.Server) {
 	logrus.Info("Closing gRPC connections")
 	grpcServer.GracefulStop()
 
-	handler := controllers.GetHandler()
+	handler := handlers.GetHandler()
 
 	logrus.Info("Closing PostgreSQL connections")
 	if err := handler.Database.Close(); err != nil {
@@ -64,7 +64,7 @@ func initServices(grpcServer *grpc.Server) {
 	user_password.RegisterUserPasswordServiceServer(grpcServer, userServer)
 }
 
-func initAndGetHandler() *controllers.Handler {
+func initAndGetHandler() *handlers.Handler {
 	logrus.Info("Starting connection with cache")
 	cacheConfig := cache.CacheConfig{
 		Addr:        "localhost:6379",
@@ -73,21 +73,20 @@ func initAndGetHandler() *controllers.Handler {
 		DialTimeout: time.Second * 2,
 	}
 	cacheId := fmt.Sprintf("%s-%s", configs.APP_NAME, *configs.APP_ID)
-	cacheRepository := utils.Must(cache.NewCacheRepository(cacheConfig, cacheId))
+	cacheRepository := errors.Must(cache.NewCacheRepository(cacheConfig, cacheId))
 
 	logrus.Info("Creating vault manager/signer")
-	privateKey := utils.Must(jwt.ParseSSHPrivateKey(*configs.JWT_PRIVATE))
-	signer := jwt.NewJwt(privateKey)
+	privateKey := errors.Must(jwt.ParseSSHPrivateKey(*configs.JWT_PRIVATE))
+	jwt.Init(privateKey)
 
 	logrus.Info("Starting a new store")
-	db := utils.Must(database.NewStore(*configs.DATABASE_QUERY))
+	db := errors.Must(database.NewStore(*configs.DATABASE_QUERY))
 
 	logrus.Info("Initializing handlers")
-	h := &controllers.Handler{
+	h := &handlers.Handler{
 		Cache:    cacheRepository,
-		Signer:   signer,
 		Database: db,
 	}
-	controllers.Init(h)
+	handlers.Init(h)
 	return h
 }

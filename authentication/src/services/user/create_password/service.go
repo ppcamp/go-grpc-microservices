@@ -2,29 +2,29 @@ package create_password
 
 import (
 	"database/sql"
+	"streamer/helpers/services"
 	"streamer/repositories/cache"
-	"streamer/repositories/database/user"
-	"streamer/services"
+	"streamer/repositories/database"
 	"streamer/utils"
-	"streamer/utils/strings"
 	"time"
+
+	"github.com/ppcamp/go-lib/random"
 )
 
-type UserCreatePassword struct {
+type CreatePasswordService struct {
+	services.TransactionBusiness[database.UserStorage]
+
 	cache cache.UserData
 	exp   time.Duration
-
-	services.TransactionBusiness[user.UserStorage]
 }
 
-// NewService creates a service that get user password, check it, and
-// return a valid JWT token
+// NewService creates a service that creates a new login
 func NewService(cache cache.UserData) services.ITransactionBusiness[Input, Output] {
-	return &UserCreatePassword{cache: cache, exp: time.Hour * 24}
+	return &CreatePasswordService{cache: cache, exp: time.Hour * 24}
 }
 
-func (u *UserCreatePassword) Execute(in Input) (*Output, error) {
-	_, err := u.Storage.GetUserPassword(in.User)
+func (s *CreatePasswordService) Execute(in Input) (*Output, error) {
+	_, err := s.Storage.GetUserPassword(in.User)
 	if err == nil {
 		return nil, ErrUserAlreadyExist
 	} else if err != sql.ErrNoRows {
@@ -36,14 +36,14 @@ func (u *UserCreatePassword) Execute(in Input) (*Output, error) {
 		return nil, err
 	}
 
-	err = u.Storage.CreateUserPassword(in.User, hashedPassword)
+	err = s.Storage.CreateUserPassword(in.User, hashedPassword)
 	if err != nil {
 		return nil, err
 	}
 
-	unlockSecret := strings.RandString(30)
+	unlockSecret := random.String(30)
 
-	err = u.cache.SetSecret(u.Context, in.User, unlockSecret, u.exp)
+	err = s.cache.StoreSecret(s.Context, in.User, unlockSecret, s.exp)
 	if err != nil {
 		return nil, err
 	}
