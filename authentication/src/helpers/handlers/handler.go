@@ -1,11 +1,10 @@
-package controllers
+package handlers
 
 import (
 	"context"
+	"streamer/helpers/services"
 	"streamer/repositories/cache"
 	"streamer/repositories/database"
-	"streamer/services"
-	"streamer/utils/jwt"
 	"sync"
 
 	"github.com/sirupsen/logrus"
@@ -13,7 +12,6 @@ import (
 
 type Handler struct {
 	Cache    cache.Cache
-	Signer   jwt.Jwt
 	Database database.Connection
 }
 
@@ -47,19 +45,14 @@ func Handle[In, Out any](
 	ctx context.Context,
 	input In,
 	service services.IBaseBusiness[In, Out],
-) (response *Out, err error) {
+) (*Out, error) {
 	service.SetContext(ctx)
 
-	select {
-	case <-ctx.Done():
-		return
+	switch service := service.(type) {
+	case services.ITransactionBusiness[In, Out]:
+		return handleTransactionService(input, service)
 	default:
-		switch service := service.(type) {
-		case services.ITransactionBusiness[In, Out]:
-			return handleTransactionService(input, service)
-		default:
-			return handleBaseService(input, service)
-		}
+		return handleBaseService(input, service)
 	}
 }
 

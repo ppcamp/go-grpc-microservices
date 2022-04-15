@@ -1,19 +1,18 @@
 package login
 
 import (
+	"streamer/helpers/services"
 	"streamer/repositories/cache"
-	"streamer/repositories/database/user"
-	"streamer/services"
+	"streamer/repositories/database"
 	"streamer/utils/jwt"
 	"time"
 )
 
-type UserLoginService[In, Out any] struct {
-	services.TransactionBusiness[user.UserStorage]
+type LoginService[In, Out any] struct {
+	services.TransactionBusiness[database.AuthStorage]
 
-	Storage   user.UserStorage
+	Storage   database.UserStorage
 	cache     cache.Auth
-	signer    jwt.Jwt
 	signerExp time.Duration
 }
 
@@ -21,17 +20,16 @@ type UserLoginService[In, Out any] struct {
 // return a valid JWT token
 func NewService(
 	repo cache.Auth,
-	signer jwt.Jwt,
+	exp time.Duration,
 ) services.ITransactionBusiness[Input, Output] {
-	return &UserLoginService[Input, Output]{
+	return &LoginService[Input, Output]{
 		cache:     repo,
-		signer:    signer,
-		signerExp: time.Second * 60 * 60 * 60,
+		signerExp: exp,
 	}
 }
 
-func (u *UserLoginService[In, Out]) Execute(in Input) (*Output, error) {
-	hash, err := u.Storage.GetUserPassword(in.User)
+func (s *LoginService[In, Out]) Execute(in Input) (*Output, error) {
+	hash, err := s.Storage.GetUserPassword(in.User)
 	if err != nil {
 		return nil, err
 	}
@@ -40,15 +38,15 @@ func (u *UserLoginService[In, Out]) Execute(in Input) (*Output, error) {
 		return nil, err
 	}
 
-	exp := time.Now().Add(u.signerExp)
-	token, err := u.signer.Generate(&jwt.Session{}, u.signerExp)
+	exp := time.Now().Add(s.signerExp)
+	token, err := jwt.Signer.Generate(&jwt.Session{}, s.signerExp)
 	if err != nil {
 		return nil, err
 	}
 
 	response := &Output{token, exp}
 
-	if err = u.cache.SetSession(u.Context, in.User, token, exp); err != nil {
+	if err = s.cache.Authorize(s.Context, in.User, token, exp); err != nil {
 		return nil, err
 	}
 

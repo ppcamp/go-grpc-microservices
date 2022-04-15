@@ -2,6 +2,7 @@ package jwt
 
 import (
 	"crypto/ecdsa"
+	"errors"
 	"fmt"
 	"time"
 
@@ -9,6 +10,10 @@ import (
 )
 
 const UnexpectedMethod string = "unexpected signing method: %v"
+
+var ErrTokenInvalid error = errors.New("token invalid")
+
+var Signer Jwt = nil
 
 type Session struct {
 	UserId *string `json:"userId,omitempty"`
@@ -21,7 +26,8 @@ type Claims struct {
 
 type Jwt interface {
 	Generate(session *Session, exp time.Duration) (string, error)
-	Parse(signedToken string) (*Claims, error)
+	Session(signedToken string) (*Session, error)
+	parse(signedToken string) (*Claims, error)
 }
 
 type impl struct {
@@ -29,9 +35,8 @@ type impl struct {
 	issuer string
 }
 
-// NewJwt creates a new jwt encoder/decoder. To this implementation, I'm using
+// NewSigner creates a new jwt encoder/decoder. To this implementation, I'm using
 // an ES512 algorithm
-//
 // Note
 //
 // - The HMAC signing method (HS256,HS384,HS512) expect []byte values for
@@ -45,11 +50,14 @@ type impl struct {
 //
 // - The EDSA signing method (Ed25519) expect ed25519.PrivateKey for signing
 // and ed25519.PublicKey for validation
-func NewJwt(secret *ecdsa.PrivateKey) Jwt {
-	return &impl{
-		secret: secret,
-		issuer: "authentication",
-	}
+func NewSigner(secret *ecdsa.PrivateKey, issuer string) Jwt {
+	return &impl{secret, issuer}
+}
+
+// Init initialize a new jwt encoder/decoder. To this implementation, I'm using
+// an ES512 algorithm
+func Init(secret *ecdsa.PrivateKey) {
+	Signer = NewSigner(secret, "authentication")
 }
 
 // Generate some token for a given session
@@ -68,7 +76,7 @@ func (j *impl) Generate(session *Session, exp time.Duration) (string, error) {
 
 // Parse does the decrypt of some token. It also checks for the correct alg
 // using Go's reflection
-func (j *impl) Parse(signedToken string) (*Claims, error) {
+func (j *impl) parse(signedToken string) (*Claims, error) {
 	keyFunc := func(token *jwt.Token) (any, error) {
 		if _, ok := token.Method.(*jwt.SigningMethodECDSA); !ok {
 			return nil, fmt.Errorf(UnexpectedMethod, token.Header["alg"])
@@ -83,4 +91,17 @@ func (j *impl) Parse(signedToken string) (*Claims, error) {
 		return nil, err
 	}
 	return claims, nil
+}
+
+func (j *impl) Session(signedToken string) (*Session, error) {
+	claim, err := j.parse(signedToken)
+	if err != nil {
+		return nil, err
+	}
+
+	if err = claim.Valid(); err != nil {
+		return nil, ErrTokenInvalid
+	}
+
+	return claim.Session, nil
 }

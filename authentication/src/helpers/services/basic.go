@@ -2,6 +2,7 @@ package services
 
 import (
 	"context"
+	"streamer/utils/jwt"
 )
 
 type IBaseBusiness[In, Out any] interface {
@@ -13,6 +14,7 @@ type IBaseBusiness[In, Out any] interface {
 
 type BaseBusiness struct {
 	Context context.Context
+	Session *jwt.Session
 }
 
 func (bc *BaseBusiness) SetContext(ctx context.Context) {

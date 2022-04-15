@@ -5,7 +5,6 @@ package auth
 import (
 	context "context"
 	empty "github.com/golang/protobuf/ptypes/empty"
-	wrappers "github.com/golang/protobuf/ptypes/wrappers"
 	grpc "google.golang.org/grpc"
 	codes "google.golang.org/grpc/codes"
 	status "google.golang.org/grpc/status"
@@ -26,8 +25,12 @@ type AuthServiceClient interface {
 	Refresh(ctx context.Context, in *TokenInput, opts ...grpc.CallOption) (*AuthOutput, error)
 	// Make some token invalid (expire sessions)
 	Invalidate(ctx context.Context, in *TokenInput, opts ...grpc.CallOption) (*empty.Empty, error)
+	// Invalidate all sessions for a given user
+	InvalidateAll(ctx context.Context, in *SessionsInput, opts ...grpc.CallOption) (*empty.Empty, error)
+	// Get all user active sessions
+	ActiveSessions(ctx context.Context, in *SessionsInput, opts ...grpc.CallOption) (*SessionsOutput, error)
 	// Check if some token is valid or not
-	IsValid(ctx context.Context, in *TokenInput, opts ...grpc.CallOption) (*wrappers.BoolValue, error)
+	IsValid(ctx context.Context, in *TokenInput, opts ...grpc.CallOption) (*empty.Empty, error)
 }
 
 type authServiceClient struct {
@@ -65,8 +68,26 @@ func (c *authServiceClient) Invalidate(ctx context.Context, in *TokenInput, opts
 	return out, nil
 }
 
-func (c *authServiceClient) IsValid(ctx context.Context, in *TokenInput, opts ...grpc.CallOption) (*wrappers.BoolValue, error) {
-	out := new(wrappers.BoolValue)
+func (c *authServiceClient) InvalidateAll(ctx context.Context, in *SessionsInput, opts ...grpc.CallOption) (*empty.Empty, error) {
+	out := new(empty.Empty)
+	err := c.cc.Invoke(ctx, "/AuthService/InvalidateAll", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *authServiceClient) ActiveSessions(ctx context.Context, in *SessionsInput, opts ...grpc.CallOption) (*SessionsOutput, error) {
+	out := new(SessionsOutput)
+	err := c.cc.Invoke(ctx, "/AuthService/ActiveSessions", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *authServiceClient) IsValid(ctx context.Context, in *TokenInput, opts ...grpc.CallOption) (*empty.Empty, error) {
+	out := new(empty.Empty)
 	err := c.cc.Invoke(ctx, "/AuthService/IsValid", in, out, opts...)
 	if err != nil {
 		return nil, err
@@ -84,8 +105,12 @@ type AuthServiceServer interface {
 	Refresh(context.Context, *TokenInput) (*AuthOutput, error)
 	// Make some token invalid (expire sessions)
 	Invalidate(context.Context, *TokenInput) (*empty.Empty, error)
+	// Invalidate all sessions for a given user
+	InvalidateAll(context.Context, *SessionsInput) (*empty.Empty, error)
+	// Get all user active sessions
+	ActiveSessions(context.Context, *SessionsInput) (*SessionsOutput, error)
 	// Check if some token is valid or not
-	IsValid(context.Context, *TokenInput) (*wrappers.BoolValue, error)
+	IsValid(context.Context, *TokenInput) (*empty.Empty, error)
 	mustEmbedUnimplementedAuthServiceServer()
 }
 
@@ -102,7 +127,13 @@ func (UnimplementedAuthServiceServer) Refresh(context.Context, *TokenInput) (*Au
 func (UnimplementedAuthServiceServer) Invalidate(context.Context, *TokenInput) (*empty.Empty, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method Invalidate not implemented")
 }
-func (UnimplementedAuthServiceServer) IsValid(context.Context, *TokenInput) (*wrappers.BoolValue, error) {
+func (UnimplementedAuthServiceServer) InvalidateAll(context.Context, *SessionsInput) (*empty.Empty, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method InvalidateAll not implemented")
+}
+func (UnimplementedAuthServiceServer) ActiveSessions(context.Context, *SessionsInput) (*SessionsOutput, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method ActiveSessions not implemented")
+}
+func (UnimplementedAuthServiceServer) IsValid(context.Context, *TokenInput) (*empty.Empty, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method IsValid not implemented")
 }
 func (UnimplementedAuthServiceServer) mustEmbedUnimplementedAuthServiceServer() {}
@@ -172,6 +203,42 @@ func _AuthService_Invalidate_Handler(srv interface{}, ctx context.Context, dec f
 	return interceptor(ctx, in, info, handler)
 }
 
+func _AuthService_InvalidateAll_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(SessionsInput)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(AuthServiceServer).InvalidateAll(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/AuthService/InvalidateAll",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(AuthServiceServer).InvalidateAll(ctx, req.(*SessionsInput))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _AuthService_ActiveSessions_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(SessionsInput)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(AuthServiceServer).ActiveSessions(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/AuthService/ActiveSessions",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(AuthServiceServer).ActiveSessions(ctx, req.(*SessionsInput))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 func _AuthService_IsValid_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(TokenInput)
 	if err := dec(in); err != nil {
@@ -208,6 +275,14 @@ var AuthService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "Invalidate",
 			Handler:    _AuthService_Invalidate_Handler,
+		},
+		{
+			MethodName: "InvalidateAll",
+			Handler:    _AuthService_InvalidateAll_Handler,
+		},
+		{
+			MethodName: "ActiveSessions",
+			Handler:    _AuthService_ActiveSessions_Handler,
 		},
 		{
 			MethodName: "IsValid",

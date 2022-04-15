@@ -3,11 +3,14 @@ package cache
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"time"
 
 	"github.com/go-redis/redis/v8"
 )
+
+var ErrSessionExpired error = errors.New("session has expired")
 
 type auth struct {
 	client *redis.Client
@@ -19,10 +22,20 @@ type internalSession struct {
 }
 
 type Auth interface {
-	// SetSession get the objects from redis, remove those who had expired and
-	// update the expiration for the user
-	SetSession(ctx context.Context, userId, jwtToken string, exp time.Time) error
-	GetSession(key string) error
+	// Authorize get the objects from redis, remove those who had expired and
+	// update the expiration for the user.
+	//
+	// Note
+	//
+	// This approach is used to get control of multiple logged devices. With this
+	// approach, we are able to invalidate all sessions for the user
+	Authorize(ctx context.Context, userId, jwtToken string, exp time.Time) error
+	// Valid check if the user is still logged
+	Valid(ctx context.Context, userId, key string) error
+	// InvalidateAll tokens for a given user id
+	InvalidateAll(ctx context.Context, userId string) error
+	// Invalidate some token for a given user
+	Invalidate(ctx context.Context, userId, token string) error
 }
 
 func (s *auth) getKeyForUser(userId string) string {
@@ -55,7 +68,7 @@ func (s *auth) removeExpTokensAndPipe(
 	return pipe, nil
 }
 
-func (s *auth) SetSession(
+func (s *auth) Authorize(
 	ctx context.Context,
 	userId, jwtToken string,
 	exp time.Time,
@@ -81,6 +94,34 @@ func (s *auth) SetSession(
 	return err
 }
 
-func (s *auth) GetSession(key string) error {
+func (s *auth) Valid(ctx context.Context, userId, key string) error {
+	k := s.getKeyForUser(userId)
+
+	r := s.client.HGet(ctx, k, key)
+	if r.Err() != nil {
+		return r.Err()
+	}
+
+	var session internalSession
+	if err := json.Unmarshal([]byte(r.Val()), &session); err != nil {
+		return err
+	}
+
+	if session.Exp.Before(time.Now()) {
+		return ErrSessionExpired
+	}
+
 	return nil
+}
+
+func (s *auth) InvalidateAll(ctx context.Context, userId string) error {
+	key := s.getKeyForUser(userId)
+	r := s.client.Del(ctx, key)
+	return r.Err()
+}
+
+func (s *auth) Invalidate(ctx context.Context, userId, token string) error {
+	key := s.getKeyForUser(userId)
+	r := s.client.HDel(ctx, key, token)
+	return r.Err()
 }

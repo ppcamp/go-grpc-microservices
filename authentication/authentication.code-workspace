@@ -3,6 +3,9 @@
 		{
 			"path": "./src"
 		},
+		{
+			"path": "."
+		}
 	],
 	"settings": {},
 	"extensions": {
