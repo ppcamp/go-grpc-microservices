@@ -1,9 +1,9 @@
 package invalidate_tokens
 
 import (
-	"streamer/helpers/services"
-	"streamer/repositories/cache"
-	"streamer/utils/jwt"
+	"authentication/helpers/services"
+	"authentication/repositories/cache"
+	"authentication/utils/jwt"
 )
 
 type InvalidateTokensService[In, Out any] struct {

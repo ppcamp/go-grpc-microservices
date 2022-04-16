@@ -2,7 +2,8 @@ package services
 
 import (
 	"database/sql/driver"
-	"streamer/repositories/database"
+
+	"authentication/repositories/database"
 
 	"github.com/sirupsen/logrus"
 )

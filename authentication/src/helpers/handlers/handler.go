@@ -2,10 +2,11 @@ package handlers
 
 import (
 	"context"
-	"streamer/helpers/services"
-	"streamer/repositories/cache"
-	"streamer/repositories/database"
 	"sync"
+
+	"authentication/helpers/services"
+	"authentication/repositories/cache"
+	"authentication/repositories/database"
 
 	"github.com/sirupsen/logrus"
 )

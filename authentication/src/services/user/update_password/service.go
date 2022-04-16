@@ -1,9 +1,9 @@
 package update_password
 
 import (
-	"streamer/helpers/services"
-	"streamer/repositories/cache"
-	"streamer/repositories/database"
+	"authentication/helpers/services"
+	"authentication/repositories/cache"
+	"authentication/repositories/database"
 )
 
 type UpdatePasswordService struct {

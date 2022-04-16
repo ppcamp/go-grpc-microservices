@@ -1,5 +1,9 @@
 # go-grpc-microservice-stream
 
+## Todo
+
+- [ ] add some way to rollback each method
+
 ## How to execute?
 
 First of all, create the images of each module by typing:

@@ -1,8 +1,8 @@
 package check_token
 
 import (
-	"streamer/helpers/services"
-	"streamer/repositories/cache"
+	"authentication/helpers/services"
+	"authentication/repositories/cache"
 )
 
 type CheckTokenService[In, Out any] struct {

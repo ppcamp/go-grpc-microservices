@@ -1,10 +1,11 @@
 package recover_password
 
 import (
-	"streamer/helpers/services"
-	"streamer/repositories/cache"
-	"streamer/repositories/database"
 	"time"
+
+	"authentication/helpers/services"
+	"authentication/repositories/cache"
+	"authentication/repositories/database"
 
 	"github.com/ppcamp/go-lib/random"
 )

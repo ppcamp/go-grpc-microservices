@@ -2,10 +2,11 @@ package jwt_test
 
 import (
 	"flag"
-	"streamer/configs"
-	"streamer/utils/jwt"
 	"testing"
 	"time"
+
+	"authentication/configs"
+	"authentication/utils/jwt"
 
 	"github.com/stretchr/testify/require"
 )

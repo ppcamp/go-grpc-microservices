@@ -1,8 +1,9 @@
 package jwt_test
 
 import (
-	"streamer/utils/jwt"
 	"testing"
+
+	"authentication/utils/jwt"
 
 	"github.com/stretchr/testify/require"
 )

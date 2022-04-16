@@ -2,7 +2,8 @@ package services
 
 import (
 	"context"
-	"streamer/utils/jwt"
+
+	"authentication/utils/jwt"
 )
 
 type IBaseBusiness[In, Out any] interface {

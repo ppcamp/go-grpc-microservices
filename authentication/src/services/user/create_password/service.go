@@ -2,11 +2,12 @@ package create_password
 
 import (
 	"database/sql"
-	"streamer/helpers/services"
-	"streamer/repositories/cache"
-	"streamer/repositories/database"
-	"streamer/utils"
 	"time"
+
+	"authentication/helpers/services"
+	"authentication/repositories/cache"
+	"authentication/repositories/database"
+	"authentication/utils"
 
 	"github.com/ppcamp/go-lib/random"
 )

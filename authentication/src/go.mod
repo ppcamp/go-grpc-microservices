@@ -1,4 +1,4 @@
-module streamer
+module authentication
 
 go 1.18
 

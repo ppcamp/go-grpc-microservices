@@ -1,10 +1,10 @@
 package update_password
 
 import (
-	"streamer/helpers/services"
-	"streamer/repositories/cache"
-	"streamer/repositories/database"
-	"streamer/utils/jwt"
+	"authentication/helpers/services"
+	"authentication/repositories/cache"
+	"authentication/repositories/database"
+	"authentication/utils/jwt"
 )
 
 type UpdateLoggedService struct {

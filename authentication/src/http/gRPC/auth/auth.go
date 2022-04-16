@@ -3,12 +3,13 @@ package auth
 import (
 	"context"
 	"errors"
-	"streamer/helpers/handlers"
-	"streamer/services/auth/check_token"
-	"streamer/services/auth/invalidate_tokens"
-	"streamer/services/auth/login"
-	"streamer/services/auth/refresh_token"
 	"time"
+
+	"authentication/helpers/handlers"
+	"authentication/services/auth/check_token"
+	"authentication/services/auth/invalidate_tokens"
+	"authentication/services/auth/login"
+	"authentication/services/auth/refresh_token"
 
 	empty "github.com/golang/protobuf/ptypes/empty"
 	"google.golang.org/protobuf/types/known/emptypb"

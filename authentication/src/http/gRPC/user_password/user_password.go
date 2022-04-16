@@ -2,8 +2,9 @@ package user_password
 
 import (
 	context "context"
-	"streamer/helpers/handlers"
-	"streamer/services/user/create_password"
+
+	"authentication/helpers/handlers"
+	"authentication/services/user/create_password"
 
 	empty "github.com/golang/protobuf/ptypes/empty"
 )

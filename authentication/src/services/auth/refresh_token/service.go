@@ -1,10 +1,11 @@
 package refresh_token
 
 import (
-	"streamer/helpers/services"
-	"streamer/repositories/cache"
-	"streamer/utils/jwt"
 	"time"
+
+	"authentication/helpers/services"
+	"authentication/repositories/cache"
+	"authentication/utils/jwt"
 )
 
 type RefreshTokenService[In, Out any] struct {
