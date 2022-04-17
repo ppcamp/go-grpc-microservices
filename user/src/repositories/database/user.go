@@ -2,51 +2,49 @@ package database
 
 import (
 	"database/sql/driver"
+	"time"
 
 	"github.com/jmoiron/sqlx"
 )
 
-type UserTransaction struct {
-	*sqlx.Tx
+type UserDataEntity struct {
+	FirstName  string    `db:"first_name"`
+	MiddleName string    `db:"middle_name"`
+	LastName   string    `db:"last_name"`
+	Nick       string    `db:"nick"`
+	BirthDate  time.Time `db:"birthdate"`
+	Email      string    `db:"email"`
 }
 
 type UserStorage interface {
 	driver.Tx
-	GetUserPassword(userId string) (string, error)
-	ActivateUser(userId string) error
-	CreateUserPassword(userId string, hashedPassword string) error
-	UpdatePassword(userId, password string) error
+	Create(in UserDataEntity) (userId string, err error)
+	Delete(userId string) error
 }
 
-func NewUserTransaction(tx *sqlx.Tx) *UserTransaction {
-	return &UserTransaction{tx}
-}
+type userTransaction struct{ *sqlx.Tx }
 
-func (u *UserTransaction) CreateUserPassword(userId string, hashedPassword string) error {
+func NewUserStorage(tx *sqlx.Tx) *userTransaction { return &userTransaction{tx} }
+
+func (s *userTransaction) Create(in UserDataEntity) (userId string, err error) {
 	sql := `
-	INSERT INTO passwords(user_id, user_password)
-	VALUES($1, $2);
+	INSERT INTO users(first_name, middle_name, last_name, nick, birthdate, email)
+	VALUES(:first_name, :middle_name, :last_name, :nick, :birthdate, :email)
+	RETURNING id;
 	`
-	_, err := u.Query(sql, userId, hashedPassword)
-	return err
+	row, err := s.NamedQuery(sql, in)
+	if err != nil {
+		return "", err
+	}
+	err = row.Scan(&userId)
+	return "", err
 }
 
-func (u *UserTransaction) ActivateUser(userId string) error {
+func (s *userTransaction) Delete(userId string) error {
 	sql := `
-	UPDATE passwords
-	SET activate = true
-	WHERE user_id = $1;
+	DELETE FROM users
+	WHERE id = $1;
 	`
-	_, err := u.Query(sql, userId)
-	return err
-}
-
-func (u *UserTransaction) UpdatePassword(userId, password string) error {
-	sql := `
-	UPDATE passwords
-	SET user_password = $2
-	WHERE user_id = $1;
-	`
-	_, err := u.Query(sql, userId, password)
+	_, err := s.Query(sql, userId)
 	return err
 }

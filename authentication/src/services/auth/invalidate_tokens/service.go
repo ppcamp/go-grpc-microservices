@@ -23,5 +23,5 @@ func (s *InvalidateTokensService[In, Out]) Execute(in Input) (*Output, error) {
 		return nil, err
 	}
 	err := s.cache.InvalidateAll(s.Context, in.User)
-	return &Output{}, err
+	return new(Output), err
 }

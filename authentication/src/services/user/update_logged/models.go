@@ -1,4 +1,4 @@
-package update_password
+package update_logged
 
 type Input struct {
 	JwtToken string

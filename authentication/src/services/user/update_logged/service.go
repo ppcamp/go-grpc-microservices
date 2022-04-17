@@ -1,4 +1,4 @@
-package update_password
+package update_logged
 
 import (
 	"authentication/helpers/services"
@@ -29,5 +29,5 @@ func (s *UpdateLoggedService) Execute(in Input) (*Output, error) {
 		return nil, err
 	}
 
-	return &Output{}, nil
+	return new(Output), nil
 }

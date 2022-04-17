@@ -6,13 +6,10 @@ import (
 
 type Storage interface {
 	UserStorage
-	AuthStorage
 }
 
 type storage struct {
-	*sqlx.Tx
-	*UserTransaction
-	*AuthTransaction
+	*userTransaction
 }
 
 // NewStorage starts a new object that can be used to access all internal
@@ -22,5 +19,5 @@ type storage struct {
 //
 // If you
 func NewStorage(tx *sqlx.Tx) Storage {
-	return &storage{tx, NewUserTransaction(tx), NewAuthTransaction(tx)}
+	return &storage{NewUserStorage(tx)}
 }

@@ -26,7 +26,7 @@ func NewService(cache cache.UserData) services.ITransactionBusiness[Input, Outpu
 func (s *RecoverPasswordService) Execute(in Input) (*Output, error) {
 	secret := random.String(30)
 
-	err := s.cache.StoreSecret(s.Context, in.User, secret, s.exp)
+	err := s.cache.StoreSecret(s.Context, in.Email, secret, s.exp)
 	if err != nil {
 		return nil, err
 	}

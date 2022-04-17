@@ -7,11 +7,10 @@ import (
 	"os/signal"
 	"streamer/configs"
 	"streamer/helpers/handlers"
-	"streamer/http/gRPC/auth"
-	"streamer/http/gRPC/user_password"
+	"streamer/http/gRPC/user"
+	"streamer/microservices/auth"
 	"streamer/repositories/cache"
 	"streamer/repositories/database"
-	"streamer/utils/jwt"
 	"time"
 
 	"github.com/ppcamp/go-lib/errors"
@@ -56,12 +55,8 @@ func gracefulStop(grpcServer *grpc.Server) {
 
 func initServices(grpcServer *grpc.Server) {
 	handler := initAndGetHandler()
-
-	authServer := auth.NewAuthService(handler)
-	userServer := user_password.NewUserPasswordService(handler)
-
-	auth.RegisterAuthServiceServer(grpcServer, authServer)
-	user_password.RegisterUserPasswordServiceServer(grpcServer, userServer)
+	userService := user.NewUserService(handler)
+	user.RegisterUserServiceServer(grpcServer, userService)
 }
 
 func initAndGetHandler() *handlers.Handler {
@@ -75,17 +70,17 @@ func initAndGetHandler() *handlers.Handler {
 	cacheId := fmt.Sprintf("%s-%s", configs.APP_NAME, *configs.APP_ID)
 	cacheRepository := errors.Must(cache.NewCacheRepository(cacheConfig, cacheId))
 
-	logrus.Info("Creating vault manager/signer")
-	privateKey := errors.Must(jwt.ParseSSHPrivateKey(*configs.JWT_PRIVATE))
-	jwt.Init(privateKey)
-
 	logrus.Info("Starting a new store")
 	db := errors.Must(database.NewStore(*configs.DATABASE_QUERY))
+
+	logrus.Info("Starting a new user Microservice connection")
+	authMs := errors.Must(auth.NewUserPasswordClient())
 
 	logrus.Info("Initializing handlers")
 	h := &handlers.Handler{
 		Cache:    cacheRepository,
 		Database: db,
+		Auth:     authMs,
 	}
 	handlers.Init(h)
 	return h

@@ -1,9 +1,6 @@
 package services
 
-import (
-	"context"
-	"streamer/utils/jwt"
-)
+import "context"
 
 type IBaseBusiness[In, Out any] interface {
 	// Execute is the function that will be executed by the controller
@@ -14,7 +11,6 @@ type IBaseBusiness[In, Out any] interface {
 
 type BaseBusiness struct {
 	Context context.Context
-	Session *jwt.Session
 }
 
 func (bc *BaseBusiness) SetContext(ctx context.Context) {

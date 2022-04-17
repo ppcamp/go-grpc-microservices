@@ -2,7 +2,43 @@
 
 ## Todo
 
-- [ ] add some way to rollback each method
+### Needed
+
+- [ ] Fix workflows
+- [ ] Improve general doc
+- [ ] Improve user doc
+- [ ] Test workflow (using general approach)
+
+### Improvements
+
+- [ ] Add two factor for user, generating QR code
+- [ ] Add tests
+- [ ] Add [validations] to each use case
+- [ ] Allow to run query without use transactions
+- [ ] Add error status codes and return BaseResponseObject (treat on handler)
+- [ ] Add a way to rollback microservices
+- [ ] Start article and create a new tag to the final Part 1
+- [ ] Add logging middleware with RequestId (sent by orchstrator)
+
+
+## Directory plan
+
+- Phase #1: Simplest microservice
+  This microservice will not handle with tech errors, it'll be syncronous and
+  will not have any compensation procedure to handle with business failures
+
+- Phase #2: Use a Saga orchistration pattern
+  By now, the microservices will not communicate between them, instead, it'll
+  exist a single service that will be responsible to orchistrate the business
+  flow. With this approach, the microservices will not impact in the others
+  directly, and you'll have a centrilized point of error. You need to implement
+  a compensation for business errors too.
+
+- Phase #3: Transform the compensations into events approach
+  With this improvement, we'll be able to retry on rollbacks that failed due to
+  tech errors and we still keep the syncronous creation, therefore, we'll be
+  long pooling (or using websocket) with client.
+
 
 ## How to execute?
 
@@ -128,3 +164,7 @@ TransactionBusiness : Transaction Strg
 AnyService: BaseBusiness | TransactionBusiness
 ```
 
+
+<!-- Links -->
+
+[validations]: https://github.com/go-playground/validator

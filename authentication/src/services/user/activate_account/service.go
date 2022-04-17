@@ -19,11 +19,11 @@ func NewService(cache cache.UserData) services.ITransactionBusiness[Input, Outpu
 }
 
 func (s *ActivateAccountService) Execute(in Input) (*Output, error) {
-	user, err := s.cache.UserFromSecret(in.ActivateToken)
+	user, err := s.cache.UserFromSecret(in.Secret)
 	if err != nil {
 		return nil, err
 	}
 
 	err = s.Storage.ActivateUser(user)
-	return &Output{}, err
+	return new(Output), err
 }

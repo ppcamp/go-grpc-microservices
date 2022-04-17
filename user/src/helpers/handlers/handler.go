@@ -3,6 +3,7 @@ package handlers
 import (
 	"context"
 	"streamer/helpers/services"
+	"streamer/microservices/auth"
 	"streamer/repositories/cache"
 	"streamer/repositories/database"
 	"sync"
@@ -13,6 +14,7 @@ import (
 type Handler struct {
 	Cache    cache.Cache
 	Database database.Connection
+	Auth     auth.IUserPassword
 }
 
 var (

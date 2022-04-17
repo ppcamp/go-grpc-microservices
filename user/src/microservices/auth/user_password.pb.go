@@ -4,7 +4,7 @@
 // 	protoc        v3.6.1
 // source: protos/user_password.proto
 
-package user_password
+package auth
 
 import (
 	empty "github.com/golang/protobuf/ptypes/empty"

@@ -1,7 +1,7 @@
-package activate_account
+package delete_account
 
 type Input struct {
-	Secret string
+	Token string
 }
 
 type Output struct{}

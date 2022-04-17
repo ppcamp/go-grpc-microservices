@@ -22,5 +22,5 @@ func (s *CheckTokenService[In, Out]) Execute(in Input) (*Output, error) {
 	if err != nil {
 		return nil, err
 	}
-	return &Output{}, nil
+	return new(Output), nil
 }

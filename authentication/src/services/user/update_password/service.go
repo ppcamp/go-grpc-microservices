@@ -25,5 +25,5 @@ func (s *UpdatePasswordService) Execute(in Input) (*Output, error) {
 	}
 
 	err = s.Storage.UpdatePassword(user, in.Password)
-	return &Output{}, err
+	return new(Output), err
 }

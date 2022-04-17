@@ -17,20 +17,12 @@ message CreateUserInput {
 
 message UpdateUserInput {
 	string token = 1;
-	optional string first_name = 2;
-	optional string middle_name = 3;
-	optional string last_name = 4;
-	optional string nickname = 5;
-	optional string email = 6;
-	optional google.protobuff.Date birthdate = 7;
-	optional string password = 8;
+	CreateUserInput user_data = 2;
 }
 
 message DeleteUserInput {
 	string token = 1;
 }
-
-message DeleteUserOutput {}
 
 service UserService {
 	// Generated a disabled user and send email with token token to activate

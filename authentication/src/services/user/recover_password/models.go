@@ -1,7 +1,7 @@
 package recover_password
 
 type Input struct {
-	User string
+	Email string
 }
 
 type Output struct {

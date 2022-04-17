@@ -43,5 +43,5 @@ func (s *RefreshTokenService[In, Out]) Execute(in Input) (*Output, error) {
 	}
 
 	err = s.cache.Authorize(s.Context, *session.UserId, token, exp)
-	return &Output{}, err
+	return new(Output), err
 }
