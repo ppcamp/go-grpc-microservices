@@ -1,53 +1,84 @@
 <script lang="ts">
+  import Button from "./components/Button.svelte";
+  import Card from "./components/Card.svelte";
+  import TextField from "./components/TextField.svelte";
+
+  const devname = "Pedro Augusto C Santos";
 </script>
 
 <div class="container">
-  <header>Hader</header>
-  <main>Main</main>
-  <aside>Aside</aside>
-  <footer>Footer</footer>
+  <main>
+    <div />
+    <div class="form">
+      <Card>
+        <h3>Login</h3>
+        <form action="#" method="post">
+          <TextField type="email" label="Email" name="email" />
+          <TextField type="password" label="Password" name="password" />
+          <div class="flexend grid">
+            <Button name="Submit" />
+          </div>
+        </form>
+      </Card>
+    </div>
+  </main>
+  <footer>
+    <div>
+      Developed by. {devname}
+    </div>
+  </footer>
 </div>
 
 <style>
   :global(body) {
     margin: 0;
     padding: 0;
+    background: #fff;
+  }
+  :root {
+    --main-color: rgb(71, 52, 177);
+  }
+  :global(*) {
     box-sizing: border-box;
-    background: #fafafa;
-  }
-
-  .container {
-    display: grid;
-    grid-template-columns: 3fr 1fr 1fr;
-    grid-template-rows: 20vh 70vh 10vh;
-    grid-template-areas:
-      "header header header"
-      "main main aside"
-      "footer footer footer";
-    gap: 1em 1em;
-  }
-
-  header {
-    background-color: rgb(9, 255, 0);
-    grid-area: header;
-    /* grid-column: 1/4; */
   }
 
   main {
-    background-color: aqua;
     grid-area: main;
-    /* grid-column: 1/2; */
+    display: flex;
+    align-items: center;
+    justify-content: center;
   }
-
   footer {
-    background-color: red;
     grid-area: footer;
-    /* grid-column: 1/4; */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
+  .container {
+    display: grid;
+    grid-template-columns: 1fr;
+    grid-template-rows: 10vh 60vh 10vh;
+    grid-template-areas: "." "main" "footer";
+    gap: 10vh 0em;
   }
 
-  aside {
-    background-color: yellow;
-    grid-area: aside;
-    /* grid-column: 2/4; */
+  .form {
+    width: max(500px, 10vh);
+    height: 1fr;
+  }
+
+  form {
+    width: 100%;
+    padding: 1em;
+  }
+
+  .grid {
+    display: flex;
+    height: max-content;
+    min-height: 50px;
+  }
+  .flexend {
+    justify-content: flex-end;
+    align-items: flex-end;
   }
 </style>
