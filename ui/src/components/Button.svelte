@@ -1,7 +1,7 @@
 <script lang="ts">
   export let onClick: Function = null;
   export let name: string;
-  export let success: boolean = true;
+  export let success: boolean = false;
 
   const click = () => onClick();
 </script>

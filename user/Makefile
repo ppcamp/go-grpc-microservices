@@ -10,8 +10,6 @@ default: help
 .PHONY: generate
 .PHONY: setup_dev
 
-include .env
-
 
 # Migrations
 N?=1
