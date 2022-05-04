@@ -9,5 +9,4 @@
 <Router>
   <Route path="login"><Login /></Route>
   <PrivateRoute path="/"><Dashboard /></PrivateRoute>
-  <PrivateRoute path="*" />
 </Router>
