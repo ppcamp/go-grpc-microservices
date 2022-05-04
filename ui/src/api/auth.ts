@@ -1,23 +1,14 @@
-const _tokenKey = "token";
+import auth from '../store/auth';
 
-
-export function getToken(): string {
-    return localStorage.getItem(_tokenKey) || "";
-}
-
-export function setToken(token: string): void {
-    localStorage.setItem(_tokenKey, token);
-}
-
-export function clearToken(): void {
-    localStorage.removeItem(_tokenKey);
-}
-
+let token: string;
+auth.Token.subscribe(t => token = t);
 
 interface LoginPayload {
     nick: string;
     password: string;
 }
+
+const getToken = (): string => token.slice();
 
 /**
  * Login into system
@@ -26,7 +17,7 @@ interface LoginPayload {
  */
 async function login(data: LoginPayload): Promise<void>{
     let new_token: string;
-    setToken(new_token);
+    auth.Token.set(new_token);
 }
 
 /**
@@ -41,7 +32,7 @@ async function refresh(): Promise<void>{
     let new_token: string;
 
     // 2. update token
-    setToken(new_token);
+    auth.Token.set(new_token);
 }
 
 
@@ -52,16 +43,14 @@ async function refresh(): Promise<void>{
     // 1. do request to API to invalidate the token
 
     // 2. remove token
-    clearToken();
+    auth.clearToken();
 }
 
 
 
 export default {
-    getToken,
-    clearToken,
-    setToken,
     logout,
     refresh,
-    login
+    login,
+    getToken,
 }

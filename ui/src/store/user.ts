@@ -1,15 +1,13 @@
 import { writable } from 'svelte/store';
 import type { User } from '../models/user';
 
-// stores
-const baseUser: User = {
-    first_name: "",
-    middle_name: "",
-    last_name: "",
-    nickname: "",
-    email: "",
-    password: "",
-    birthdate: new Date(),
-};
 
-export const UserStore = writable<User>(baseUser);
+const load_from_cache = (): User => JSON.parse(localStorage.getItem("user"));
+export const UserStore = writable<User>(load_from_cache());
+
+UserStore.subscribe(s => localStorage.setItem("user", JSON.stringify(s)));
+
+
+export default {
+    UserStore,
+}
