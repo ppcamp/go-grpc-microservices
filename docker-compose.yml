@@ -1,0 +1,53 @@
+version: '3.1'
+
+services:
+  # envoy is a proxy for gRPC client requests
+  envoy:
+    image: envoyproxy/envoy-dev:09ede365201986d45e2f8cae19695bdd8a9fceb2
+    ports:
+      - "10000:10000"
+    volumes:
+      - ./envoy.yaml:/etc/envoy/envoy.yaml
+
+  authdb:
+    container_name: postgres
+    hostname: postgres
+    image: postgres:14-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_PASSWORD: somepassword
+      POSTGRES_USER: authuser
+      POSTGRES_DB: authentication
+    ports:
+      - 5432:5432
+
+  userdb:
+    container_name: postgres
+    hostname: postgres
+    image: postgres:14-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_PASSWORD: somepassword
+      POSTGRES_USER: useruser
+      POSTGRES_DB: users
+    ports:
+      - 5432:5431
+
+  redis:
+    container_name: redis
+    hostname: redis
+    image: redis
+    restart: unless-stopped
+    ports:
+    - 6379:6379
+
+  # redis commander is used to visualize the redis data in an organized way (UI)
+  redis-commander:
+    container_name: redis-commander
+    hostname: redis-commander
+    image: rediscommander/redis-commander:latest
+    restart: unless-stopped
+    environment:
+    - REDIS_HOSTS=local:redis:6379
+    ports:
+    - 8081:8081

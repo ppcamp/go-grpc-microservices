@@ -36,7 +36,7 @@ ZwcGNhbXBAREVTS1RPUC0xNE9WNTVQAQIDBA==
 
 	DATABASE_QUERY = flag.String(
 		"DATABASE_QUERY",
-		"host=localhost port=5432 user=authuser password=somepassword dbname=authentication sslmode=disable application_name=authentication",
+		"host=localhost port=5431 user=authuser password=somepassword dbname=users sslmode=disable application_name=users",
 		"Query used to connect with psql driver",
 	)
 
