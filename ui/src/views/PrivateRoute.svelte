@@ -1,6 +1,6 @@
 <script lang="ts">
   import { Route, navigate } from "svelte-navigator";
-  import auth from "../store/auth";
+  import auth from "../stores/auth";
 
   export let path: string;
 

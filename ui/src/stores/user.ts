@@ -1,5 +1,14 @@
 import { writable } from 'svelte/store';
-import type { User } from '../models/user';
+
+export interface User {
+    first_name: string;
+    middle_name: string;
+    last_name: string;
+    nickname: string;
+    email: string;
+    password: string;
+    birthdate: Date;
+}
 
 
 const load_from_cache = (): User => JSON.parse(localStorage.getItem("user"));

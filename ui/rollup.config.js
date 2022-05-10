@@ -75,7 +75,17 @@ export default {
 
         // If we're building for production (npm run build
         // instead of npm run dev), minify
-        production && terser()
+        production && terser(),
+
+        // used to replace environment variables inside the code
+        // replace({
+        //     // 2 level deep object should be stringify
+        //     process: JSON.stringify({
+        //         env: {
+        //             isProd: production,
+        //         }
+        //     }),
+        // }),
     ],
     watch: {
         clearScreen: false,

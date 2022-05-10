@@ -1,12 +1,10 @@
 <script lang="ts">
-  export let onClick: Function = null;
+  export let onClick: Function;
   export let name: string;
   export let success: boolean = false;
-
-  const click = () => onClick();
 </script>
 
-<button on:click={click} class:success>{name}</button>
+<button on:click={onClick} class:success>{name}</button>
 
 <style>
   button {

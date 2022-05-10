@@ -1,4 +1,4 @@
 <nav>
-  <a href="#">Logout from all devices</a>
-  <a href="#">Logout</a>
+  <span>Logout from all devices</span>
+  <span>Logout</span>
 </nav>

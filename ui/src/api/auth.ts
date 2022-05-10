@@ -1,4 +1,7 @@
-import auth from '../store/auth';
+import environment from '../environment';
+import auth from '../stores/auth';
+import { UserPasswordServiceClient } from "../gRPC/generated/User_passwordServiceClientPb";
+import { CreateInput, CreateOutput } from "../gRPC/generated/user_password_pb";
 
 let token: string;
 auth.Token.subscribe(t => token = t);
@@ -17,7 +20,19 @@ const getToken = (): string => token.slice();
  */
 async function login(data: LoginPayload): Promise<void>{
     let new_token: string;
-    auth.Token.set(new_token);
+    let service = new UserPasswordServiceClient(environment.AuthHost);
+
+    const request = new CreateInput();
+    const header = {};
+    let response: CreateOutput;
+
+    try {
+        response = await service.create(request, header);
+    } catch (err) {
+        console.error(err)
+    }
+
+    // auth.Token.set(new_token);
 }
 
 /**
