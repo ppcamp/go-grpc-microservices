@@ -17,7 +17,7 @@ func TestGenerate(t *testing.T) {
 
 	var exp int64 = 30
 
-	privateKey, err := jwt.ParseSSHPrivateKey(*configs.JWT_PRIVATE)
+	privateKey, err := jwt.ParseSSHPrivateKey(configs.JwtPrivate)
 	assert.Nil(err)
 
 	jwt.Init(privateKey)

@@ -5,7 +5,7 @@ import "flag"
 var (
 	APP_PORT = flag.String(
 		"PORT",
-		":8080",
+		":9001",
 		"The port that gRPC server will listen",
 	)
 

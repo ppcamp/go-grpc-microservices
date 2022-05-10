@@ -17,15 +17,25 @@ import (
 
 	"github.com/ppcamp/go-lib/errors"
 	"github.com/sirupsen/logrus"
+	"github.com/urfave/cli/v2"
 	"google.golang.org/grpc"
 )
 
 func main() {
+	app := cli.NewApp()
+	app.Name = "microservice-authentication"
+	app.Usage = "Used to authorize every request made for user"
+	app.Flags = configs.Flags
+	app.Action = run
+	app.Run(os.Args)
+}
+
+func run(c *cli.Context) (err error) {
 	signalChan := make(chan os.Signal, 1)
 	signal.Notify(signalChan, os.Interrupt)
 
 	grpcServer := grpc.NewServer()
-	listener := errors.Must(net.Listen("tcp", *configs.APP_PORT))
+	listener := errors.Must(net.Listen("tcp", configs.AppPort))
 	initServices(grpcServer)
 
 	go func() {
@@ -35,9 +45,10 @@ func main() {
 		}
 	}()
 
-	logrus.Info("Server started and listening")
+	logrus.Infof("Server started and listening at http://localhost%s", configs.AppPort)
 	<-signalChan
 	gracefulStop(grpcServer)
+	return
 }
 
 func gracefulStop(grpcServer *grpc.Server) {
@@ -68,20 +79,30 @@ func initServices(grpcServer *grpc.Server) {
 func initAndGetHandler() *handlers.Handler {
 	logrus.Info("Starting connection with cache")
 	cacheConfig := cache.CacheConfig{
-		Addr:        "localhost:6379",
-		Password:    "", // no password set
-		DB:          0,  // use default DB
+		Addr:        configs.CacheHost + ":" + configs.CachePort,
+		Password:    "",              // no password set
+		DB:          configs.CacheDb, // use default DB
 		DialTimeout: time.Second * 2,
 	}
-	cacheId := fmt.Sprintf("%s-%s", configs.APP_NAME, *configs.APP_ID)
+	cacheId := fmt.Sprintf("%s-%s", configs.APP_NAME, configs.AppId)
 	cacheRepository := errors.Must(cache.NewCacheRepository(cacheConfig, cacheId))
 
 	logrus.Info("Creating vault manager/signer")
-	privateKey := errors.Must(jwt.ParseSSHPrivateKey(*configs.JWT_PRIVATE))
+	privateKey := errors.Must(jwt.ParseSSHPrivateKey(configs.JwtPrivate))
 	jwt.Init(privateKey)
 
 	logrus.Info("Starting a new store")
-	db := errors.Must(database.NewStore(*configs.DATABASE_QUERY))
+
+	connQuery := fmt.Sprintf(
+		database.CONNECTION_QUERY,
+		configs.DatabaseHost,
+		configs.DatabasePort,
+		configs.DatabaseUser,
+		configs.DatabasePassword,
+		configs.DatabaseName,
+	)
+	print(connQuery)
+	db := errors.Must(database.NewStore(connQuery))
 
 	logrus.Info("Initializing handlers")
 	h := &handlers.Handler{

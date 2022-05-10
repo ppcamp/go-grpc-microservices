@@ -8,6 +8,7 @@ import (
 )
 
 const (
+	CONNECTION_QUERY   = "host=%s port=%s user=%s password=%s dbname=%s sslmode=disable application_name=authentication"
 	MAX_OPEN_CONNS     = 10
 	MAX_IDLE_CONNS     = 1
 	CONN_MAX_IDLE_TIME = time.Second * 2
