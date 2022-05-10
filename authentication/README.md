@@ -94,6 +94,7 @@ curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/master/insta
 ## TODO
 
 - [ ] Allow repositories the possibility to use NonTransaction connection
+- [ ] Migrations should be runned from each microservice, not from a given cli
 
 
 ## See

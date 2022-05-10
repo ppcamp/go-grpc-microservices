@@ -2,6 +2,8 @@
 
 ## Todo
 
+ERROR: [transport] transport: http2Server.operateHeaders parsed a :connection header which makes a request malformed as per the HTTP/2 spec
+
 ### Needed
 
 - [ ] Fix workflows

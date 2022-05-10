@@ -1,7 +1,7 @@
 # We're using database per service, however, until now, we aren't using
 # Orchestration-based saga neither Choreography-based saga
 
-version: '3.1'
+version: '3.8'
 
 services:
   authentication:
@@ -14,10 +14,17 @@ services:
       GRPC_GO_LOG_VERBOSITY_LEVEL: 2
       APP_PORT: ":9000"
       CACHE_HOST: redis
-      DATABASE_HOST: authdb
+      DATABASE_HOST: db
       DATABASE_USER: authuser
       DATABASE_PASSWORD: somepassword
       DATABASE_DBNAME: authentication
+    ports:
+      - 9000:9000
+    depends_on:
+      - authdb
+      - redis
+    links:
+      - "authdb:db"
 
   proxy:
     container_name: proxy
@@ -32,6 +39,8 @@ services:
       # volumes:
       # - ./conf/nginx:/etc/nginx/conf.d
       #   - ./ui/public:/data/www:ro
+    depends_on:
+      - authentication
 
   authdb:
     container_name: authdb

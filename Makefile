@@ -13,7 +13,7 @@ run: ## Run the server
 migrate: ## Run migrations for both microservices
 	@echo "Running migrations"
 	@cd authentication && make migrate
-	@cd user && make migrate
+#   @cd user && make migrate
 
 setup_dev: ## Install dev dependencies
 	@echo "Installing protobuf"
