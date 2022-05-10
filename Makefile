@@ -16,11 +16,8 @@ migrate: ## Run migrations for both microservices
 	@cd user && make migrate
 
 setup_dev: ## Install dev dependencies
-	@echo "Installing go-migrate"
-	@go install -tags 'postgres' github.com/golang-migrate/migrate/v4/cmd/migrate@latest
-	@echo "Installing linters"
-	@curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh | sh -s -- -b $(go env GOPATH)/bin v1.45.2
-
+	@echo "Installing protobuf"
+	@sudo apt install protobuf-compiler
 
 help:
 	@printf "\e[2m Available methods:\033[0m\n\n"

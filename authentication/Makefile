@@ -10,8 +10,10 @@ default: help
 .PHONY: generate
 .PHONY: setup_dev
 
-# include .env
-
+ifeq ($(shell test -f .env && echo -n EXIST_ENV), EXIST_ENV)
+    include .env
+    export
+endif
 
 # Migrations
 N?=1
@@ -45,7 +47,7 @@ docker: ## Create docker image
 
 migrate: ## Run migrations created with `make create_migration`. Remember to `make setup_dev`
 	@echo "Running migrations"
-	@migrate -path migrations -database "postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@localhost:5432/${POSTGRES_DATABASE}?sslmode=disable&application_name=authmigration" -verbose up
+	@migrate -path migrations -database "postgresql://${DATABASE_USER}:${DATABASE_PASSWORD}@localhost:5432/${DATABASE_DBNAME}?sslmode=disable&application_name=authmigration" -verbose up
 
 
 create_migration: ## Create a new migration, e.g `name=teste make create_migration`. Remember to `make setup_dev`
@@ -55,7 +57,7 @@ create_migration: ## Create a new migration, e.g `name=teste make create_migrati
 
 revert_migrations: ## Revert a given migration, e.g `N=2 make revert_migrations`, by default 1. Remember to `make setup_dev`
 	@echo "Reverting migrations"
-	@migrate -path migrations -database "postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@localhost:5432/${POSTGRES_DATABASE}?sslmode=disable&application_name=authmigration" -verbose down ${N}
+	@migrate -path migrations -database "postgresql://${DATABASE_USER}:${DATABASE_PASSWORD}@localhost:5432/${DATABASE_DBNAME}?sslmode=disable&application_name=authmigration" -verbose down ${N}
 
 
 generate: ## Create golang protos
@@ -66,9 +68,16 @@ generate: ## Create golang protos
 	@protoc --go-grpc_out=. protos/*.proto
 
 
-setup_dev: ## Install dev dependencies
+setup: ## Download all needed packages
 	@echo "Installing go-migrate"
-	@go install -tags 'postgres' github.com/golang-migrate/migrate/v4/cmd/migrate@latest
+	@go install -tags 'postgres' github.com/golang-migrate/migrate/v4/cmd/migrate@latest && \
+		echo "export PATH=PATH:`go env GOPATH`/bin"
+	@export PATH="$PATH:`go env GOPATH`/bin"
+	@echo "Installing all go packages"
+	@cd src && go get -v ./...
+
+
+setup_dev: setup ## Install dev dependencies
 	@echo "Installing linters"
 	@curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh | sh -s -- -b $(go env GOPATH)/bin v1.45.2
 
@@ -83,5 +92,5 @@ help:
 	@cat $(MAKEFILE_LIST) | \
 	 	grep -E '^[a-zA-Z_]+:.* ## .*$$' | \
 		sed -rn 's/`([a-zA-Z0-9=\_\ \-]+)`/\x1b[33m\1\x1b[0m/g;t1;b2;:1;h;:2;p' | \
-		sed -rn 's/(.*): ## (.*)/\x1b[32m\1:\x1b[0m\2/p' | \
+		sed -rn 's/(.*):.* ## (.*)/\x1b[32m\1:\x1b[0m\2/p' | \
 		column -t -s ":"

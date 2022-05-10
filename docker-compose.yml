@@ -1,17 +1,40 @@
+# We're using database per service, however, until now, we aren't using
+# Orchestration-based saga neither Choreography-based saga
+
 version: '3.1'
 
 services:
-  # envoy is a proxy for gRPC client requests
-  envoy:
-    image: envoyproxy/envoy-dev:09ede365201986d45e2f8cae19695bdd8a9fceb2
+  authentication:
+    container_name: authentication
+    build:
+      context: authentication
+      dockerfile: Dockerfile
+    environment:
+      GRPC_GO_LOG_SEVERITY_LEVEL: info
+      GRPC_GO_LOG_VERBOSITY_LEVEL: 2
+      APP_PORT: ":9000"
+      CACHE_HOST: redis
+      DATABASE_HOST: authdb
+      DATABASE_USER: authuser
+      DATABASE_PASSWORD: somepassword
+      DATABASE_DBNAME: authentication
+
+  proxy:
+    container_name: proxy
+    image: hokaccha/grpc-web-proxy-nginx:latest
+    command: /bin/sh -c "envsubst '$$NGINX_GRPC_PASS' < /etc/nginx/conf.d/grpc_proxy.conf.template > /etc/nginx/conf.d/grpc_proxy.conf && nginx -g 'daemon off;'"
+    restart: unless-stopped
+    environment:
+      NGINX_GRPC_PASS: 'authentication:9000'
     ports:
-      - "10000:10000"
-    volumes:
-      - ./envoy.yaml:/etc/envoy/envoy.yaml
+      - 80:80
+      - 8080:8080
+      # volumes:
+      # - ./conf/nginx:/etc/nginx/conf.d
+      #   - ./ui/public:/data/www:ro
 
   authdb:
-    container_name: postgres
-    hostname: postgres
+    container_name: authdb
     image: postgres:14-alpine
     restart: unless-stopped
     environment:
@@ -22,8 +45,7 @@ services:
       - 5432:5432
 
   userdb:
-    container_name: postgres
-    hostname: postgres
+    container_name: userdb
     image: postgres:14-alpine
     restart: unless-stopped
     environment:
@@ -31,23 +53,24 @@ services:
       POSTGRES_USER: useruser
       POSTGRES_DB: users
     ports:
-      - 5432:5431
+      - 5431:5432
 
   redis:
     container_name: redis
-    hostname: redis
     image: redis
     restart: unless-stopped
     ports:
-    - 6379:6379
+      - 6379:6379
 
   # redis commander is used to visualize the redis data in an organized way (UI)
   redis-commander:
     container_name: redis-commander
-    hostname: redis-commander
+    # hostname: redis
     image: rediscommander/redis-commander:latest
     restart: unless-stopped
     environment:
-    - REDIS_HOSTS=local:redis:6379
+      - REDIS_HOSTS=local:redis:6379
     ports:
-    - 8081:8081
+      - 8081:8081
+    depends_on:
+      - redis
