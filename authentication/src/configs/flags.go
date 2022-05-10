@@ -44,7 +44,7 @@ var Flags = []cli.Flag{
 	},
 	&cli.StringFlag{
 		Name:        "database_dbname",
-		Destination: &DatabasePassword,
+		Destination: &DatabaseName,
 		EnvVars:     []string{"DATABASE_DBNAME"},
 		Value:       "authentication",
 	},
@@ -64,6 +64,12 @@ var Flags = []cli.Flag{
 	&cli.StringFlag{
 		Name:        "app_env",
 		Destination: &AppEnvironment,
+		EnvVars:     []string{"APP_ENV"},
+		Value:       "dev",
+	},
+	&cli.StringFlag{
+		Name:        "app_port",
+		Destination: &AppPort,
 		EnvVars:     []string{"APP_PORT"},
 		Value:       ":9000",
 	},

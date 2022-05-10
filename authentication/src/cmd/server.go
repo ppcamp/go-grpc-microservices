@@ -101,7 +101,6 @@ func initAndGetHandler() *handlers.Handler {
 		configs.DatabasePassword,
 		configs.DatabaseName,
 	)
-	print(connQuery)
 	db := errors.Must(database.NewStore(connQuery))
 
 	logrus.Info("Initializing handlers")
