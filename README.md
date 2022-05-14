@@ -3,6 +3,9 @@
 ## Todo
 
 ERROR: [transport] transport: http2Server.operateHeaders parsed a :connection header which makes a request malformed as per the HTTP/2 spec
+There's a lack of documentation for this. https://kennethjenkins.net/posts/go-nginx-grpc/.
+Therefore, I choosed envoy
+
 
 ### Needed
 
@@ -170,3 +173,9 @@ AnyService: BaseBusiness | TransactionBusiness
 <!-- Links -->
 
 [validations]: https://github.com/go-playground/validator
+
+
+https://stackoverflow.com/questions/65897760/how-to-disable-route-timeout-in-envoy
+https://github.com/improbable-eng/grpc-web
+https://github.com/kubernetes/ingress-nginx/issues/8086
+https://www.nginx.com/blog/deploying-nginx-plus-as-an-api-gateway-part-3-publishing-grpc-services/

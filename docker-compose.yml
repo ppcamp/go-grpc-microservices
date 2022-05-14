@@ -1,9 +1,96 @@
 # We're using database per service, however, until now, we aren't using
 # Orchestration-based saga neither Choreography-based saga
 
-version: '3.8'
+version: '3.9'
 
 services:
+  ###############
+  # Databases
+  ###############
+  authdb:
+    container_name: authdb
+    image: postgres:14-alpine
+    environment:
+      POSTGRES_PASSWORD: somepassword
+      POSTGRES_USER: authuser
+      POSTGRES_DB: authentication
+    ports:
+      - 5432:5432
+    deploy:
+      restart_policy:
+        condition: on-failure
+        max_attempts: 3
+      resources:
+        reservations:
+          memory: 50M
+        limits:
+          cpus: '0.5'
+          memory: 200M
+
+  userdb:
+    container_name: userdb
+    image: postgres:14-alpine
+    environment:
+      POSTGRES_PASSWORD: somepassword
+      POSTGRES_USER: useruser
+      POSTGRES_DB: users
+    ports:
+      - 5431:5432
+    deploy:
+      restart_policy:
+        condition: on-failure
+        max_attempts: 3
+      resources:
+        reservations:
+          memory: 50M
+        limits:
+          cpus: '0.5'
+          memory: 200M
+
+  ###############
+  # Caching
+  ###############
+  redis:
+    container_name: redis
+    image: redis
+    ports:
+      - 6379:6379
+    deploy:
+      restart_policy:
+        condition: on-failure
+        max_attempts: 3
+      resources:
+        reservations:
+          memory: 50M
+        limits:
+          cpus: '0.5'
+          memory: 100M
+
+  # redis commander is used to visualize the redis data in an organized way (UI)
+  redis-commander:
+    container_name: redis-commander
+    # hostname: redis
+    image: rediscommander/redis-commander:latest
+    environment:
+      - REDIS_HOSTS=local:redis:6379
+    ports:
+      - 8081:8081
+    depends_on:
+      - redis
+    deploy:
+      restart_policy:
+        condition: on-failure
+        max_attempts: 3
+      resources:
+        reservations:
+          memory: 20M
+        limits:
+          cpus: '0.5'
+          memory: 50M
+
+  ###############
+  # Services
+  ###############
   authentication:
     container_name: authentication
     build:
@@ -25,61 +112,49 @@ services:
       - redis
     links:
       - "authdb:db"
+    deploy:
+      restart_policy:
+        condition: on-failure
+        max_attempts: 3
+      resources:
+        reservations:
+          memory: 50M
+        limits:
+          cpus: '1.0'
+          memory: 100M
 
+  ###############
+  # Proxy
+  ###############
   proxy:
     container_name: proxy
-    image: hokaccha/grpc-web-proxy-nginx:latest
-    command: /bin/sh -c "envsubst '$$NGINX_GRPC_PASS' < /etc/nginx/conf.d/grpc_proxy.conf.template > /etc/nginx/conf.d/grpc_proxy.conf && nginx -g 'daemon off;'"
-    restart: unless-stopped
-    environment:
-      NGINX_GRPC_PASS: 'authentication:9000'
+    image: envoyproxy/envoy-alpine:v1.21-latest
     ports:
-      - 80:80
       - 8080:8080
-      # volumes:
-      # - ./conf/nginx:/etc/nginx/conf.d
-      #   - ./ui/public:/data/www:ro
+      - 9901:9901
+    volumes:
+      - ./proxy/envoy.yaml:/etc/envoy/envoy.yaml
     depends_on:
       - authentication
-
-  authdb:
-    container_name: authdb
-    image: postgres:14-alpine
-    restart: unless-stopped
-    environment:
-      POSTGRES_PASSWORD: somepassword
-      POSTGRES_USER: authuser
-      POSTGRES_DB: authentication
-    ports:
-      - 5432:5432
-
-  userdb:
-    container_name: userdb
-    image: postgres:14-alpine
-    restart: unless-stopped
-    environment:
-      POSTGRES_PASSWORD: somepassword
-      POSTGRES_USER: useruser
-      POSTGRES_DB: users
-    ports:
-      - 5431:5432
-
-  redis:
-    container_name: redis
-    image: redis
-    restart: unless-stopped
-    ports:
-      - 6379:6379
-
-  # redis commander is used to visualize the redis data in an organized way (UI)
-  redis-commander:
-    container_name: redis-commander
-    # hostname: redis
-    image: rediscommander/redis-commander:latest
-    restart: unless-stopped
-    environment:
-      - REDIS_HOSTS=local:redis:6379
-    ports:
-      - 8081:8081
-    depends_on:
-      - redis
+    deploy:
+      restart_policy:
+        condition: on-failure
+        max_attempts: 3
+      resources:
+        reservations:
+          memory: 50M
+        limits:
+          cpus: '1.5'
+          memory: 100M
+  # proxy:
+  #   container_name: proxy
+  #   image: hokaccha/grpc-web-proxy-nginx:latest
+  #   command: /bin/sh -c "envsubst '$$NGINX_GRPC_PASS' < /etc/nginx/conf.d/grpc_proxy.conf.template > /etc/nginx/conf.d/grpc_proxy.conf && nginx -g 'daemon off;'"
+  #   restart: unless-stopped
+  #   environment:
+  #     NGINX_GRPC_PASS: 'authentication:9000'
+  #   ports:
+  #     - 80:80
+  #     - 8080:8080
+  #   depends_on:
+  #     - authentication
