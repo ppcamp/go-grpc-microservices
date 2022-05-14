@@ -3,7 +3,14 @@ default: help
 .PHONY: run
 .PHONY: help
 .PHONY: migrate
+.PHONY: generate
 .PHONY: setup_dev
+
+JS_IMPORT_STYLE = import_style=commonjs,binary
+JS_OUT_STYLE = import_style=typescript,mode=grpcwebtext
+JS_OUT_DIR = generated/web
+GO_OUT_DIR = generated/go
+PROTO_DIR = protos
 
 
 run: ## Run the server
@@ -15,9 +22,40 @@ migrate: ## Run migrations for both microservices
 	@cd authentication && make migrate
 #   @cd user && make migrate
 
+
 setup_dev: ## Install dev dependencies
 	@echo "Installing protobuf"
 	@sudo apt install protobuf-compiler
+	@go install google.golang.org/protobuf/cmd/protoc-gen-go@latest
+	@go install google.golang.org/grpc/cmd/protoc-gen-go-grpc@latest
+
+
+generate_go: ## Generate go protos
+	@echo "Generating Go protos"
+	@mkdir -p $(GO_OUT_DIR)
+	@echo " - Generating messages"
+	@protoc --go_out=$(GO_OUT_DIR) $(PROTO_DIR)/*.proto
+	@echo " - Generating services"
+	@protoc --go-grpc_out=$(GO_OUT_DIR) $(PROTO_DIR)/*.proto
+
+
+generate_grpcweb: ## Generate grpc-web protos
+	@echo "Generating grpc-web protos"
+	@mkdir -p $(JS_OUT_DIR)
+	@protoc -I=$(PROTO_DIR) $(PROTO_DIR)/* \
+    	--js_out=$(JS_IMPORT_STYLE):$(JS_OUT_DIR) \
+    	--grpc-web_out=$(JS_OUT_STYLE):$(JS_OUT_DIR)
+
+generate: generate_go generate_grpcweb ## Create probuffs
+
+
+dcup: ## Start docker compose
+	@docker-compose up --scale proxy=2 --force-recreate --build -d
+
+
+dcdown: ## Close docker compose instances
+	@docker-compose down
+
 
 help:
 	@printf "\e[2m Available methods:\033[0m\n\n"
@@ -29,5 +67,5 @@ help:
 	@cat $(MAKEFILE_LIST) | \
 	 	grep -E '^[a-zA-Z_]+:.* ## .*$$' | \
 		sed -rn 's/`([a-zA-Z0-9=\_\ \-]+)`/\x1b[33m\1\x1b[0m/g;t1;b2;:1;h;:2;p' | \
-		sed -rn 's/(.*): ## (.*)/\x1b[32m\1:\x1b[0m\2/p' | \
+		sed -rn 's/(.*):.* ## (.*)/\x1b[32m\1:\x1b[0m\2/p' | \
 		column -t -s ":"

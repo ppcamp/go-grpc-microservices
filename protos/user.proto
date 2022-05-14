@@ -1,0 +1,34 @@
+syntax = "proto3";
+
+import "google/protobuf/empty.proto";
+import "google/protobuf/timestamp.proto";
+
+option go_package = "/user";
+
+message CreateUserInput {
+	string first_name = 1;
+	string middle_name = 2;
+	string last_name = 3;
+	string nickname = 4;
+	string email = 5;
+	string password = 7;
+	google.protobuf.Timestamp birthdate = 6;
+}
+
+message UpdateUserInput {
+	string token = 1;
+	CreateUserInput user_data = 2;
+}
+
+message DeleteUserInput {
+	string token = 1;
+}
+
+service UserService {
+	// Generated a disabled user and send email with token token to activate
+	rpc Create(CreateUserInput) returns (google.protobuf.Empty) {}
+	// Update the current user
+	rpc Update(UpdateUserInput) returns (google.protobuf.Empty) {}
+	// Delete the current user
+	rpc Delete(DeleteUserInput) returns (google.protobuf.Empty) {}
+}

@@ -7,7 +7,6 @@ default: help
 .PHONY: migrate
 .PHONY: create_migration
 .PHONY: revert_migrations
-.PHONY: generate
 .PHONY: setup_dev
 
 
@@ -55,13 +54,6 @@ revert_migrations: ## Revert a given migration, e.g `N=2 make revert_migrations`
 	@echo "Reverting migrations"
 	@migrate -path migrations -database "postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@localhost:5432/${POSTGRES_DATABASE}?sslmode=disable&application_name=authmigration" -verbose down ${N}
 
-
-generate: ## Create golang protos
-	@echo "Generating protos"
-	@echo " - Generating messages"
-	@protoc --go_out=. protos/*.proto
-	@echo " - Generating services"
-	@protoc --go-grpc_out=. protos/*.proto
 
 
 setup_dev: ## Install dev dependencies

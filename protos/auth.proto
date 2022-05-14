@@ -1,0 +1,50 @@
+syntax = "proto3";
+
+import "google/protobuf/timestamp.proto";
+import "google/protobuf/empty.proto";
+
+option go_package = "/auth";
+
+
+message LoginInput {
+	string user = 1; // the user's id
+	string password = 2; // the user's password
+}
+
+message AuthOutput {
+	string token = 1; // jwt token
+	google.protobuf.Timestamp exp = 2; // jwt expiration token
+}
+
+message TokenInput {
+	string token = 1; // jwt token
+}
+
+message SessionsInput {
+	string token = 1; // jwt token
+	string user = 2; // user id
+}
+
+message SessionsOutput {
+	repeated Sessions user = 1; // user id
+}
+
+message Sessions{
+	string token = 1; // jwt token
+}
+
+
+service AuthService {
+	// Validate password, create and return a valid Token
+	rpc Login(LoginInput) returns (AuthOutput) {}
+	// Validate a token and return a new one if the current token is valid
+	rpc Refresh(TokenInput) returns (AuthOutput) {}
+	// Make some token invalid (expire sessions)
+	rpc Invalidate(TokenInput) returns (google.protobuf.Empty) {}
+	// Invalidate all sessions for a given user
+	rpc InvalidateAll(SessionsInput) returns (google.protobuf.Empty) {}
+	// Get all user active sessions
+	rpc ActiveSessions(SessionsInput) returns (SessionsOutput) {}
+	// Check if some token is valid or not. Raise error if fail
+	rpc IsValid(TokenInput) returns (google.protobuf.Empty) {}
+}

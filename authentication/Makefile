@@ -7,7 +7,6 @@ default: help
 .PHONY: migrate
 .PHONY: create_migration
 .PHONY: revert_migrations
-.PHONY: generate
 .PHONY: setup_dev
 
 ifeq ($(shell test -f .env && echo -n EXIST_ENV), EXIST_ENV)
@@ -58,14 +57,6 @@ create_migration: ## Create a new migration, e.g `name=teste make create_migrati
 revert_migrations: ## Revert a given migration, e.g `N=2 make revert_migrations`, by default 1. Remember to `make setup_dev`
 	@echo "Reverting migrations"
 	@migrate -path migrations -database "postgresql://${DATABASE_USER}:${DATABASE_PASSWORD}@localhost:5432/${DATABASE_DBNAME}?sslmode=disable&application_name=authmigration" -verbose down ${N}
-
-
-generate: ## Create golang protos
-	@echo "Generating protos"
-	@echo " - Generating messages"
-	@protoc --go_out=. protos/*.proto
-	@echo " - Generating services"
-	@protoc --go-grpc_out=. protos/*.proto
 
 
 setup: ## Download all needed packages
