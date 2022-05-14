@@ -1,7 +1,7 @@
 import environment from '../environment';
 import auth from '../stores/auth';
-import { UserPasswordServiceClient } from "../gRPC/generated/User_passwordServiceClientPb";
-import { CreateInput, CreateOutput } from "../gRPC/generated/user_password_pb";
+import { UserPasswordServiceClient } from "../gRPC/web/User_passwordServiceClientPb";
+import { CreateInput, CreateOutput } from "../gRPC/web/user_password_pb";
 
 let token: string;
 auth.Token.subscribe(t => token = t);

@@ -1,6 +1,6 @@
 import auth from './auth';
-import { UserPasswordServiceClient } from '../gRPC/generated/User_passwordServiceClientPb';
-import { CreateInput, CreateOutput } from '../gRPC/generated/user_password_pb';
+import { UserPasswordServiceClient } from '../gRPC/web/User_passwordServiceClientPb';
+import { CreateInput, CreateOutput } from '../gRPC/web/user_password_pb';
 import environment from '../environment';
 import metadata from '../gRPC/metadata';
 
@@ -24,13 +24,14 @@ export async function create_user(data: CreateUser): Promise<void>{
     request.setPassword(data.password);
     request.setUser("f53c11ed-2b33-4aab-86da-bd9b8c26a997");
 
-    const m = {}; //metadata.with_deadline(3);
+    const m = metadata.with_deadline(10);
 
     let response: CreateOutput;
     try {
         response = await service.create(request, m);
+        console.log(response);
     } catch (err) {
-        console.error(err);
+        console.log(err);
         console.log("error");
         return;
     }

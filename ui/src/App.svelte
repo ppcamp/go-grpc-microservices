@@ -5,6 +5,8 @@
   import CreateUser from "./views/CreateUser.svelte";
   import Dashboard from "./views/Dashboard.svelte";
   import Login from "./views/Login.svelte";
+
+  const name: string = "Microservice test";
 </script>
 
 <Router>
