@@ -12,6 +12,7 @@ import (
 	"authentication/services/user/update_password"
 
 	empty "github.com/golang/protobuf/ptypes/empty"
+	"github.com/sirupsen/logrus"
 )
 
 type UserPasswordService struct {
@@ -27,6 +28,8 @@ func NewUserPasswordService(
 
 func (u *UserPasswordService) Create(
 	ctx context.Context, in *CreateInput) (*CreateOutput, error) {
+	logrus.WithField("in", in).Info("calling create")
+
 	pl := create_password.Input{User: in.GetUser(), Password: in.GetPassword()}
 
 	service := create_password.NewService(u.handler.Cache)
@@ -35,6 +38,8 @@ func (u *UserPasswordService) Create(
 	if err != nil {
 		return nil, err
 	}
+
+	logrus.Info("returning create")
 
 	return &CreateOutput{Secret: response.ActivateToken}, nil
 }

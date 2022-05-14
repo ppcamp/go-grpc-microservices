@@ -10,6 +10,7 @@ import (
 	"authentication/utils"
 
 	"github.com/ppcamp/go-lib/random"
+	"github.com/sirupsen/logrus"
 )
 
 type CreatePasswordService struct {
@@ -25,6 +26,7 @@ func NewService(cache cache.UserData) services.ITransactionBusiness[Input, Outpu
 }
 
 func (s *CreatePasswordService) Execute(in Input) (*Output, error) {
+	logrus.Info("getting password")
 	_, err := s.Storage.GetUserPassword(in.User)
 	if err == nil {
 		return nil, ErrUserAlreadyExist
@@ -32,11 +34,13 @@ func (s *CreatePasswordService) Execute(in Input) (*Output, error) {
 		return nil, err
 	}
 
+	logrus.Info("hashing password")
 	hashedPassword, err := utils.HashPassword(in.Password)
 	if err != nil {
 		return nil, err
 	}
 
+	logrus.Info("storing password at database")
 	err = s.Storage.CreateUserPassword(in.User, hashedPassword)
 	if err != nil {
 		return nil, err
@@ -44,10 +48,12 @@ func (s *CreatePasswordService) Execute(in Input) (*Output, error) {
 
 	unlockSecret := random.String(30)
 
+	logrus.Info("storing password at cache")
 	err = s.cache.StoreSecret(s.Context, in.User, unlockSecret, s.exp)
 	if err != nil {
 		return nil, err
 	}
 
+	logrus.Info("returning")
 	return &Output{unlockSecret}, nil
 }
