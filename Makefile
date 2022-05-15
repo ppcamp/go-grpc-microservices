@@ -5,12 +5,19 @@ default: help
 .PHONY: migrate
 .PHONY: generate
 .PHONY: setup_dev
+.PHONY: generate_go
+.PHONY: generate_grpcweb
+.PHONY: certificate
 
 JS_IMPORT_STYLE = import_style=commonjs,binary
 JS_OUT_STYLE = import_style=typescript,mode=grpcwebtext
 JS_OUT_DIR = generated/web
 GO_OUT_DIR = generated/go
 PROTO_DIR = protos
+SECURE_CERT ?= -nodes
+CERT_FOLDER = certs
+DEFAULT_CERT_PARAMS = req -x509 -newkey rsa:4096 -keyout $(CERT_FOLDER)/key.pem -out $(CERT_FOLDER)/cert.pem -sha256 -days 365
+CERT_PARAMS = $(DEFAULT_CERT_PARAMS) $(SECURE_CERT)
 
 
 run: ## Run the server
@@ -50,11 +57,17 @@ generate: generate_go generate_grpcweb ## Create probuffs
 
 
 dcup: ## Start docker compose
-	@docker-compose up --scale proxy=2 --force-recreate --build -d
+	@docker-compose up --force-recreate --build -d
 
 
 dcdown: ## Close docker compose instances
 	@docker-compose down
+
+
+certificate: ## Generate self signed certificate. Type `SECURE_CERT= make certificate` to add psswd
+	@echo "Generating self signed certificates"
+	@mkdir -p $(CERT_FOLDER)
+	@openssl $(CERT_PARAMS)
 
 
 help:
