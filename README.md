@@ -1,11 +1,17 @@
 # go-grpc-microservice-stream
 
+microservices needed:
+[go-user-crud](https://github.com/ppcamp/go-user-crud),
+[go-authentication](https://github.com/ppcamp/go-authentication)
+
 ## Todo
 
 ERROR: [transport] transport: http2Server.operateHeaders parsed a :connection header which makes a request malformed as per the HTTP/2 spec
 There's a lack of documentation for this. https://kennethjenkins.net/posts/go-nginx-grpc/.
 Therefore, I choosed envoy
 
+
+https://stackoverflow.com/questions/10175812/how-to-generate-a-self-signed-ssl-certificate-using-openssl
 
 ### Needed
 

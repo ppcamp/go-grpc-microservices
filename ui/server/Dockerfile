@@ -28,7 +28,8 @@ RUN apk update && \
     echo "America/Sao_Paulo" > /etc/timezone
 
 COPY --from=builder /build/application .
-COPY ../public .
+RUN mkdir -p /public
+COPY ../public /public
 
 ENV APP_PATH=public
 

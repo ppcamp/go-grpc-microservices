@@ -1,0 +1,1 @@
+You should put all needed protos here (To do so, go to each microservice and get it's own proto)

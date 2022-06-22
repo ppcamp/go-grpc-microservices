@@ -5,19 +5,13 @@ default: help
 .PHONY: migrate
 .PHONY: generate
 .PHONY: setup_dev
-.PHONY: generate_go
-.PHONY: generate_grpcweb
+.PHONY: proto
 .PHONY: certificate
 
 JS_IMPORT_STYLE = import_style=commonjs,binary
 JS_OUT_STYLE = import_style=typescript,mode=grpcwebtext
 JS_OUT_DIR = generated/web
-GO_OUT_DIR = generated/go
 PROTO_DIR = protos
-SECURE_CERT ?= -nodes
-CERT_FOLDER = certs
-DEFAULT_CERT_PARAMS = req -x509 -newkey rsa:4096 -keyout $(CERT_FOLDER)/key.pem -out $(CERT_FOLDER)/cert.pem -sha256 -days 365
-CERT_PARAMS = $(DEFAULT_CERT_PARAMS) $(SECURE_CERT)
 
 
 run: ## Run the server
@@ -37,23 +31,12 @@ setup_dev: ## Install dev dependencies
 	@go install google.golang.org/grpc/cmd/protoc-gen-go-grpc@latest
 
 
-generate_go: ## Generate go protos
-	@echo "Generating Go protos"
-	@mkdir -p $(GO_OUT_DIR)
-	@echo " - Generating messages"
-	@protoc --go_out=$(GO_OUT_DIR) $(PROTO_DIR)/*.proto
-	@echo " - Generating services"
-	@protoc --go-grpc_out=$(GO_OUT_DIR) $(PROTO_DIR)/*.proto
-
-
-generate_grpcweb: ## Generate grpc-web protos
+proto: ## Generate grpc-web protos
 	@echo "Generating grpc-web protos"
 	@mkdir -p $(JS_OUT_DIR)
 	@protoc -I=$(PROTO_DIR) $(PROTO_DIR)/* \
     	--js_out=$(JS_IMPORT_STYLE):$(JS_OUT_DIR) \
     	--grpc-web_out=$(JS_OUT_STYLE):$(JS_OUT_DIR)
-
-generate: generate_go generate_grpcweb ## Create probuffs
 
 
 dcup: ## Start docker compose
@@ -62,12 +45,6 @@ dcup: ## Start docker compose
 
 dcdown: ## Close docker compose instances
 	@docker-compose down
-
-
-certificate: ## Generate self signed certificate. Type `SECURE_CERT= make certificate` to add psswd
-	@echo "Generating self signed certificates"
-	@mkdir -p $(CERT_FOLDER)
-	@openssl $(CERT_PARAMS)
 
 
 help:
